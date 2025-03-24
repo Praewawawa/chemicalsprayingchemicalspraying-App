@@ -2,181 +2,191 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 @RoutePage()
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ControlScreen(),
-    );
-  }
-}
-
-class ControlScreen extends StatefulWidget {
-  @override
-  _ControlScreenState createState() => _ControlScreenState();
-}
-
-class _ControlScreenState extends State<ControlScreen> {
-  bool isSwitched = false;
-  int speed = 1;
-  int timer = 10;
+class ControlScreen extends StatelessWidget {
+  const ControlScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_back),
-                  onPressed: () {},
-                ),
-                Switch(
-                  value: isSwitched,
-                  onChanged: (value) {
-                    setState(() {
-                      isSwitched = value;
-                    });
-                  },
-                ),
-              ],
-            ),
-            Spacer(),
-            Center(
-              child: Column(
+      backgroundColor: const Color(0xFFF0FAFF),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+          child: Column(
+            children: [
+              // แถวบน: ปุ่มย้อนกลับ และ Toggle
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      children: [
-                        Text("4.23 km/s", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text("ความเร็ว"),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      controlButton(Icons.arrow_upward),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      controlButton(Icons.arrow_back),
-                      controlButton(Icons.circle, label: "Auto"),
-                      controlButton(Icons.arrow_forward),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      controlButton(Icons.arrow_downward),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      infoBox("100%", "แบตเตอรี่"),
-                      infoBox("100%", "ปริมาณสารเคมี"),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  sliderControl("Timer", timer, 60, (value) {
-                    setState(() {
-                      timer = value.toInt();
-                    });
-                  }),
-                  sliderControl("Speed", speed, 5, (value) {
-                    setState(() {
-                      speed = value.toInt();
-                    });
-                  }),
+                  Icon(Icons.arrow_back),
+                  Switch(
+                    value: true,
+                    onChanged: (val) {},
+                    activeColor: Colors.green,
+                  )
                 ],
               ),
-            ),
-            Spacer(),
-          ],
+
+              const SizedBox(height: 10),
+
+              // ปุ่มควบคุม Auto (รูปร่างคล้ายรีโมต)
+              _buildControlPad(),
+
+              const SizedBox(height: 20),
+
+              // สถานะ 3 อย่าง
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: const [
+                  _StatusCard(title: 'ความเร็วลม', value: '4.23 km/s'),
+                  _StatusCard(title: 'แบตเตอรี่', value: '100%'),
+                  _StatusCard(title: 'ปริมาณสารเคมี', value: '100%'),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // Timer
+              _TimerControl(),
+
+              const SizedBox(height: 20),
+
+              // Speed Control
+              _SpeedControl(),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget controlButton(IconData icon, {String? label}) {
-    return Padding(
-      padding: EdgeInsets.all(8.0),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey,
-          padding: EdgeInsets.all(20),
-        ),
-        onPressed: () {},
-        child: label != null ? Text(label) : Icon(icon, color: Colors.black),
-      ),
-    );
-  }
-
-  Widget infoBox(String value, String label) {
-    return Container(
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
+  Widget _buildControlPad() {
+    return SizedBox(
+      width: 200,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          Text(label),
+          Positioned(
+            top: 0,
+            child: _controlButton(Icons.arrow_drop_up),
+          ),
+          Positioned(
+            bottom: 0,
+            child: _controlButton(Icons.arrow_drop_down),
+          ),
+          Positioned(
+            left: 0,
+            child: _controlButton(Icons.arrow_left),
+          ),
+          Positioned(
+            right: 0,
+            child: _controlButton(Icons.arrow_right),
+          ),
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.grey[200],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.text_fields, color: Colors.grey),
+                Text('Auto', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget sliderControl(String label, int value, int max, Function(double) onChanged) {
+  Widget _controlButton(IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[400],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.all(10),
+      child: Icon(icon, color: Colors.white),
+    );
+  }
+}
+
+class _StatusCard extends StatelessWidget {
+  final String title;
+  final String value;
+
+  const _StatusCard({required this.title, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 90,
+      height: 60,
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        children: [
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(title, style: const TextStyle(fontSize: 12)),
+        ],
+      ),
+    );
+  }
+}
+
+class _TimerControl extends StatelessWidget {
+  const _TimerControl();
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const Text("Timer", style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Switch(value: true, onChanged: (val) {}),
+            Switch(value: true, onChanged: (v) {}, activeColor: Colors.green),
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text("00 : 01 : 0"),
+            ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+class _SpeedControl extends StatelessWidget {
+  const _SpeedControl();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text("Speed", style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(
-              child: Slider(
-                value: value.toDouble(),
-                min: 0,
-                max: max.toDouble(),
-                onChanged: onChanged,
-              ),
-            ),
+            Switch(value: true, onChanged: (v) {}, activeColor: Colors.green),
+            const SizedBox(width: 10),
             Container(
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.grey[400],
-                borderRadius: BorderRadius.circular(5),
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Text("$value"),
+              child: const Text("1"),
             ),
           ],
         ),

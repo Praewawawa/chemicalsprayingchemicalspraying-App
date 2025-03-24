@@ -6,10 +6,6 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 @RoutePage()
 
 
-void main() {
-  runApp(MyApp());
-}
-
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

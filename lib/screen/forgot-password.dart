@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-
 @RoutePage()
+class ForgotPassword extends StatelessWidget {
+  static const String routeName = "/forgot-password";
+  const ForgotPassword({Key? key}) : super(key: key);
 
-
-class ForgotPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,12 +57,12 @@ class ForgotPasswordScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20),
-            //ยืนยันเปลี่ยนรหัสผ่าน
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {context.router.replaceNamed('/otpperification');
+                onPressed: () {
+                  context.router.replaceNamed('/otp-verification');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,

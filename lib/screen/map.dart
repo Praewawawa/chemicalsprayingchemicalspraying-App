@@ -4,9 +4,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 @RoutePage()
 
-void main() {
-  runApp(MyApp());
-}
+
+
 
 class MyApp extends StatelessWidget {
   @override

@@ -69,7 +69,7 @@ class LoginPage extends StatelessWidget {
                   height: 9,
                 ),
                 TextButton(
-                  onPressed: () {context.router.replaceNamed('/editpassword');
+                  onPressed: () {context.router.replaceNamed('/forgot_password');
                   },
                   child: Text(
                     "\t\t\t\t\t                                                ลืมรหัสผ่าน?",

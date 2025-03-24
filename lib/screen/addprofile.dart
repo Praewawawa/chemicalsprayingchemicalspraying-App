@@ -1,258 +1,259 @@
-import 'package:auto_route/auto_route.dart';
+
 import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 
 @RoutePage()
-class AddprofilePage extends StatelessWidget {
+class AddprofileRoute extends StatefulWidget {
+  const AddprofileRoute({super.key});
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Garden List',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: GardenListScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
+  State<AddprofileRoute> createState() => _AddprofileRouteState();
 }
 
-class GardenListScreen extends StatefulWidget {
-  @override
-  _GardenListScreenState createState() => _GardenListScreenState();
-}
-
-class _GardenListScreenState extends State<GardenListScreen> {
-  List<Garden> gardens = [
-    Garden(name: 'สวนมังคุด', status: 'ออนไลน์', time: '8 ชั่วโมง 5:49s', progress: 40, image: 'assets/mangosteen.png'),
-    Garden(name: 'สวนทุเรียน', status: 'ออนไลน์', time: '80 ชั่วโมง 5:49s', progress: 40, image: 'assets/durian.png'),
-    Garden(name: 'สวนลำไย', status: 'ออนไลน์', time: '80 ชั่วโมง 5:49s', progress: 40, image: 'assets/longan.png'),
-  ];
-
+class _AddprofileRouteState extends State<AddprofileRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('สวนของฉัน'),
-      ),
-      body: _buildGardenList(),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: () {
-              context.router.replaceNamed('/ปุ่มเพิ่มอุปกรณ์');
-            },
-            child: Icon(Icons.add),
-            backgroundColor: Colors.green,
+      backgroundColor: const Color(0xFFF0FAFF),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Column(
+            children: [
+              _buildWindSpeedIndicator(),
+              const SizedBox(height: 24),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 3 / 3.2,
+                children: const [
+                  BatteryCard(),
+                  SprayControlCard(),
+                  DistanceCard(),
+                  ChemicalCard(),
+                ],
+              ),
+            ],
           ),
-          SizedBox(height: 16),
-          FloatingActionButton(
-            onPressed: () {
-              // Do something when pressed
-            },
-            child: Icon(Icons.menu),
-            backgroundColor: Colors.green,
-          ),
-        ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'หน้าหลัก',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'ตั้งค่า',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'แจ้งเตือน',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'โปรไฟล์',
-          ),
-        ],
         selectedItemColor: Colors.green,
         unselectedItemColor: Colors.grey,
+        showUnselectedLabels: true,
+        currentIndex: 0,
         type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          _onItemTapped(index, context); // เรียกฟังก์ชันเมื่อกดปุ่ม
-        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "หน้าหลัก"),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "ตั้งค่า"),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "แจ้งเตือน"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "โปรไฟล์"),
+        ],
+        onTap: (index) {},
       ),
     );
   }
 
-  // ฟังก์ชันสำหรับแสดงรายการสวน
-  Widget _buildGardenList() {
-    return ListView.builder(
-      itemCount: gardens.length,
-      itemBuilder: (context, index) {
-        return Dismissible(
-          key: Key(gardens[index].name),
-          background: Container(
-            alignment: Alignment.centerRight,
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            color: Colors.red,
-            child: Icon(Icons.delete, color: Colors.white),
-          ),
-          secondaryBackground: Container(
-            color: Colors.red,
-            alignment: Alignment.centerLeft,
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Icon(Icons.delete, color: Colors.white),
-          ),
-          confirmDismiss: (direction) async {
-            if (direction == DismissDirection.endToStart) {
-              return await _confirmDelete();
-            } else {
-              return false;
-            }
-          },
-          onDismissed: (direction) {
-            setState(() {
-              gardens.removeAt(index);
-            });
-          },
-          child: GardenTile(
-            garden: gardens[index],
-            onEdit: () {
-              _editGarden(index);
-            },
-            onDelete: () {
-              setState(() {
-                gardens.removeAt(index);
-              });
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Future<bool?> _confirmDelete() {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('ลบสวนนี้หรือไม่?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text('ยกเลิก'),
+  Widget _buildWindSpeedIndicator() {
+    return Center(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.green.shade300, width: 2),
             ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text('ลบ'),
+          ),
+          Container(
+            width: 180,
+            height: 180,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.green, width: 14),
+              gradient: RadialGradient(
+                colors: [Colors.green.shade50, Colors.white],
+                center: Alignment.center,
+                radius: 0.9,
+              ),
             ),
-          ],
-        );
-      },
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Text('N↑', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+              SizedBox(height: 4),
+              Text('4.23', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+              Text('km/s', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            ],
+          ),
+        ],
+      ),
     );
-  }
-
-  void _editGarden(int index) {
-    // คุณสามารถเพิ่มโค้ดการแก้ไขสวนที่นี่
-  }
-
-  // ฟังก์ชันสำหรับเปลี่ยนหน้าเมื่อกดปุ่ม
-  void _onItemTapped(int index, BuildContext context) {
-    switch (index) {
-      case 0:
-        // หน้าหลัก
-        context.router.replaceNamed('/addprofile');
-        break;
-      case 1:
-        // หน้า "ตั้งค่า"
-        context.router.pushNamed('/nottification');
-        break;
-      case 2:
-        // หน้า "แจ้งเตือน"
-        context.router.pushNamed('/setting');//หน้า setting กับ nottification สลับหน้ากัน
-        break;
-      case 3:
-        // หน้า "โปรไฟล์"
-        context.router.pushNamed('/edit');
-        break;
-    }
   }
 }
 
-class Garden {
-  final String name;
-  final String status;
-  final String time;
-  final int progress;
-  final String image;
-
-  Garden({
-    required this.name,
-    required this.status,
-    required this.time,
-    required this.progress,
-    required this.image,
-  });
-}
-
-class GardenTile extends StatelessWidget {
-  final Garden garden;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-
-  GardenTile({required this.garden, required this.onEdit, required this.onDelete});
+class BatteryCard extends StatelessWidget {
+  const BatteryCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      color: Colors.lightGreen[100], // สีพื้นหลังของการ์ด
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              backgroundImage: AssetImage(garden.image),
-              radius: 30,
+    return _buildCard(
+      title: "แบตเตอรี่",
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            height: 150,
+            width: 100,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
             ),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    garden.name,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    garden.time,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black54,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    '${garden.status} | ${garden.progress}%',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
+          ),
+          Container(
+            height: 100,
+            width: 100,
+            decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.circular(8),
             ),
-          ],
-        ),
+            alignment: Alignment.center,
+            child: const Text("80%", style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
+}
+
+class SprayControlCard extends StatefulWidget {
+  const SprayControlCard({super.key});
+
+  @override
+  State<SprayControlCard> createState() => _SprayControlCardState();
+}
+
+class _SprayControlCardState extends State<SprayControlCard> {
+  int sprayLevel = 2;
+
+  void _increaseLevel() {
+    if (sprayLevel < 3) setState(() => sprayLevel++);
+  }
+
+  void _decreaseLevel() {
+    if (sprayLevel > 1) setState(() => sprayLevel--);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildCard(
+      title: "ตั้งค่าระบบฉีดพ่น",
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Column(
+            children: [
+              IconButton(
+                onPressed: _increaseLevel,
+                icon: const Icon(Icons.arrow_drop_up, color: Colors.green, size: 30),
+              ),
+              Text("ระดับที่ ${sprayLevel - 1}", style: const TextStyle(color: Colors.grey, fontSize: 14)),
+              Text("ระดับที่ $sprayLevel", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text("ระดับที่ ${sprayLevel + 1}", style: const TextStyle(color: Colors.grey, fontSize: 14)),
+              IconButton(
+                onPressed: _decreaseLevel,
+                icon: const Icon(Icons.arrow_drop_down, color: Colors.green, size: 30),
+              ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: const [
+              Text("เปิด", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              SizedBox(height: 12),
+              Text("สถานะการทำงาน", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class DistanceCard extends StatelessWidget {
+  const DistanceCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildCard(
+      title: "เส้นทางการทำงาน",
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: const [
+          Icon(Icons.directions_walk),
+          Text("10 Km", style: TextStyle(fontWeight: FontWeight.bold)),
+          Icon(Icons.arrow_forward_ios, size: 10, color: Colors.green),
+        ],
+      ),
+    );
+  }
+}
+
+class ChemicalCard extends StatelessWidget {
+  const ChemicalCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildCard(
+      title: "ปริมาณสารเคมี",
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            height: 150,
+            width: 100,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          Container(
+            height: 80,
+            width: 100,
+            decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            alignment: Alignment.center,
+            child: const Text("50%", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Widget _buildCard({required String title, required Widget child}) {
+  return Card(
+    elevation: 2,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          Expanded(child: child),
+        ],
+      ),
+    ),
+  );
 }

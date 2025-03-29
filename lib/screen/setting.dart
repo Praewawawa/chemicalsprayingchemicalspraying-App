@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 
 
-@RoutePage( name: 'NotificationSettingRoute')
+@RoutePage( name: 'NotificationSettingRoute') // ใช้ @RoutePage() เพื่อให้ AutoRoute สร้างเส้นทางสำหรับหน้า
 /// หน้าแสดงการตั้งค่าการแจ้งเตือน
 
 class NotificationSettingPage extends StatefulWidget {
@@ -79,37 +79,30 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
           ],
         ),
       ),
-        bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'หน้าหลัก',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'ตั้งค่า',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'แจ้งเตือน',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'โปรไฟล์',
+          ),
+        ],
+        currentIndex: 1,
         selectedItemColor: Colors.green,
         unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        currentIndex: 0,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "หน้าหลัก"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "ตั้งค่า"),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "แจ้งเตือน"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "โปรไฟล์"),
-        ],
-        onTap: (index)
-        {
-          setState(() {
-            _selectedIndex = index;
-          });
-            switch (index) {
-              case 0:
-                context.router.push(const AddprofileRoute()); // <-- ใช้ Route ที่ generate มา
-                break;
-              case 1:
-                context.router.push(const NotificationSettingRoute());
-                break;
-              case 2:
-                context.router.push(const NotificationRoute());
-                break;
-              case 3:
-                context.router.push(const ProfileRoute());
-                break;
-            }
+        onTap: (index) {
+          // สามารถเขียนการเปลี่ยนหน้าได้ตามต้องการ
         },
       ),
     );

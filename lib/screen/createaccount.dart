@@ -147,9 +147,59 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          context.router.replaceNamed('/login');
-                        },
+                    onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.person, size: 80, color: Colors.green),
+                                  const SizedBox(height: 10),
+                                  const Text(
+                                    'ยืนยันการ\nสมัครสมาชิก',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context); // ปิด popup
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.grey[300],
+                                        ),
+                                        child: const Text('ยกเลิก', style: TextStyle(color: Colors.black)),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          context.router.replaceNamed('/otpverification');
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green,
+                                        ),
+                                        child: const Text('ยืนยัน', style: TextStyle(color: Colors.white)),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                    },
+
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color.fromRGBO(71, 192, 61, 1),
                           padding: EdgeInsets.symmetric(

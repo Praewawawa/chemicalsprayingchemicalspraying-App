@@ -62,20 +62,21 @@ class _AddprofilePageState extends State<AddprofilePage> {
           setState(() {
             _selectedIndex = index;
           });
-            switch (index) {
-              case 0:
-                context.router.push(const AddprofileRoute()); // <-- ใช้ Route ที่ generate มา
-                break;
-              case 1:
-                context.router.push(const NotificationSettingRoute());
-                break;
-              case 2:
-                context.router.push(const NotificationRoute());
-                break;
-              case 3:
-                context.router.push(const ProfileRoute());
-                break;
-            }
+              switch (index) {
+                case 0:
+                  context.router.push(const AddprofileRoute()); // <-- ใช้ Route ที่ generate มา
+                  break;
+                case 1:
+                  context.router.push(const NotificationSettingRoute());
+                  break;
+                case 2:
+                  context.router.push(const NotificationRoute());
+                  break;
+                case 3:
+                  context.router.push(const ProfileRoute());
+                  break;
+              }
+
         },
       ),
     );

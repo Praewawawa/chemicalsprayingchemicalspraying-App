@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-@RoutePage()
+@RoutePage( name: 'CreateAccountRoute')
 class CreateAccountPage extends StatelessWidget {
   const CreateAccountPage({super.key});
 

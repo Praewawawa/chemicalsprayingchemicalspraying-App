@@ -73,7 +73,7 @@ class OTPVerificationScreen extends StatelessWidget {
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  context.router.pushNamed('/otp');  // ✅ ใช้ pushNamed แทน replaceNamed
+                  context.router.pushNamed('/resetpassword');  // ✅ ใช้ pushNamed แทน replaceNamed
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,

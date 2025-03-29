@@ -1,82 +1,132 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-
-@RoutePage()
-
+import 'package:chemicalspraying/router/routes.gr.dart';
 
 
-class MyApp extends StatelessWidget {
+@RoutePage(name: 'ProfileRoute')
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ProfileScreen(),
-    );
-  }
+  State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class ProfileScreen extends StatelessWidget {
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          title: Column(
-            children: [
-              Icon(Icons.logout, size: 50, color: Colors.red),
-              SizedBox(height: 10),
-              Text("ยืนยันการออกจากระบบ", textAlign: TextAlign.center),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("ยกเลิก", style: TextStyle(color: Colors.black)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              onPressed: () {
-                // เพิ่มโค้ดออกจากระบบที่นี่
-                Navigator.pop(context);
-              },
-              child: Text("ยืนยัน"),
-            ),
-          ],
-        );
-      },
-    );
-  }
+class _ProfilePageState extends State<ProfilePage> {
+  int _selectedIndex = 0; // ✅ ประกาศตัวแปรตรงนี้
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("โปรไฟล์"),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
+        title: const Text(
+          'โปรไฟล์',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage("assets/profile.jpg"), // ใช้รูปโปรไฟล์ที่เหมาะสม
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
+      bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.grey,
+        showUnselectedLabels: true,
+        currentIndex: _selectedIndex,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "หน้าหลัก"),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "ตั้งค่า"),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "แจ้งเตือน"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "โปรไฟล์"),
+        ],
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+          switch (index) {
+            case 0:
+              context.router.push(const AddprofileRoute());
+              break;
+            case 1:
+              context.router.push(const NotificationSettingRoute());
+              break;
+            case 2:
+              context.router.push(const NotificationRoute());
+              break;
+            case 3:
+              context.router.push(const ProfileRoute());
+              break;
+          }
+        },
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 20),
+          // Profile Image
+          CircleAvatar(
+            radius: 50,
+            backgroundImage: AssetImage('assets/image/image.jpg'), // เปลี่ยนเป็นรูปของคุณ
+          ),
+          const SizedBox(height: 10),
+          // Name
+          const Text(
+            'Praewa Sompoi',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 5),
+          // Username
+          const Text(
+            '@Praewa_1234',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+          const SizedBox(height: 20),
+          // Edit Button
+          SizedBox(
+            width: 200,
+            height: 45,
+            child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                backgroundColor: Colors.green,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-              onPressed: () => _showLogoutDialog(context),
-              child: Text("ออกจากระบบ", style: TextStyle(color: Colors.white)),
+              onPressed: () {
+                // ใส่ event แก้ไข
+              },
+              child: const Text('แก้ไข'),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 30),
+          const Divider(),
+
+          // Logout Button
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 45,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () {
+                  // ใส่ event ออกจากระบบ
+                },
+                child: const Text('ออกจากระบบ'),
+              ),
+            ),
+          ),
+
+        ],
       ),
     );
   }

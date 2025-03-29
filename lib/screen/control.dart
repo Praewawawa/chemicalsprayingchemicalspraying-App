@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-@RoutePage()
+@RoutePage( name: 'ControlRoute')
 class ControlScreen extends StatelessWidget {
   const ControlScreen({super.key});
 

@@ -1,7 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:chemicalspraying/router/routes.gr.dart';
 
-@RoutePage()
+@RoutePage(name: 'ForgotPasswordRoute')
 class ForgotPassword extends StatelessWidget {
   static const String routeName = "/forgot-password";
   const ForgotPassword({Key? key}) : super(key: key);
@@ -46,41 +47,45 @@ class ForgotPassword extends StatelessWidget {
               ),
             ),
             SizedBox(height: 10),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                onPressed: () {},
-                child: Text(
-                  'กลับไปยังหน้า ลงชื่อเข้าใช้',
-                  style: TextStyle(color: Colors.green, fontSize: 14),
-                ),
+            TextButton(
+              onPressed: () {
+                context.router.push(const LoginRoute());
+              },
+              child: Text(
+                'กลับไปยังหน้า ลงชื่อเข้าใช้',
+                style: TextStyle(color: Colors.green, fontSize: 14),
               ),
             ),
+
             SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  context.router.replaceNamed('/otp-verification');
+                  context.router.push(const OTPVerificationRoute());
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   'ยืนยัน',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
             ),
             SizedBox(height: 20),
-            Center(
-              child: Text(
-                'คุณมีบัญชีอยู่แล้วหรือไม่ ?',
-                style: TextStyle(color: Colors.grey, fontSize: 14),
+              TextButton(
+              onPressed: () {
+                context.router.push(const LoginRoute());
+              },
+              child: const Text(
+                'คุณมีบัญชีอยู่แล้วหรือไม่ ? ลงชื่อเข้าใช้',
+                style: TextStyle(color: Colors.green, fontSize: 14),
               ),
             ),
           ],

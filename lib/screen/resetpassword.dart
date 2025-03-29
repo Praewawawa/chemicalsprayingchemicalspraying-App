@@ -1,25 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-@RoutePage()
-
-
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ResetPasswordScreen(),
-    );
-  }
-}
-
+@RoutePage(name: 'ResetPasswordRoute')
 class ResetPasswordScreen extends StatelessWidget {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
+
+  ResetPasswordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +30,7 @@ class ResetPasswordScreen extends StatelessWidget {
               TextField(
                 controller: passwordController,
                 obscureText: true,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'อย่างน้อย 8 หลัก',
                   border: OutlineInputBorder(),
                 ),
@@ -53,7 +40,7 @@ class ResetPasswordScreen extends StatelessWidget {
               TextField(
                 controller: confirmPasswordController,
                 obscureText: true,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: '********',
                   border: OutlineInputBorder(),
                 ),
@@ -70,7 +57,7 @@ class ResetPasswordScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    onPressed: () {context.router.replaceNamed('/login');
+                    context.router.replaceNamed('/login');
                   },
                   child: const Text(
                     'ยืนยัน',

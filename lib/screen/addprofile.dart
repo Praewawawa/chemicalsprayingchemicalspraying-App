@@ -2,16 +2,20 @@
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:chemicalspraying/router/routes.gr.dart'; // ✅ แก้ให้ถูก
 
-@RoutePage()
-class AddprofileRoute extends StatefulWidget {
-  const AddprofileRoute({super.key});
+
+@RoutePage(name: 'AddprofileRoute') // <- ให้ auto_route สร้าง AddprofileRoute ให้เรา
+class AddprofilePage extends StatefulWidget { // <-- เปลี่ยนชื่อ widget
+  const AddprofilePage({super.key});
 
   @override
-  State<AddprofileRoute> createState() => _AddprofileRouteState();
+  State<AddprofilePage> createState() => _AddprofilePageState();
 }
 
-class _AddprofileRouteState extends State<AddprofileRoute> {
+class _AddprofilePageState extends State<AddprofilePage> {
+  int _selectedIndex = 0;
+  // สร้างตัวแปรเพื่อเก็บค่าความเร็วลม
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,7 +57,26 @@ class _AddprofileRouteState extends State<AddprofileRoute> {
           BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "แจ้งเตือน"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "โปรไฟล์"),
         ],
-        onTap: (index) {},
+        onTap: (index)
+        {
+          setState(() {
+            _selectedIndex = index;
+          });
+            switch (index) {
+              case 0:
+                context.router.push(const AddprofileRoute()); // <-- ใช้ Route ที่ generate มา
+                break;
+              case 1:
+                context.router.push(const NotificationSettingRoute());
+                break;
+              case 2:
+                context.router.push(const NotificationRoute());
+                break;
+              case 3:
+                context.router.push(const ProfileRoute());
+                break;
+            }
+        },
       ),
     );
   }

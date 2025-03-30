@@ -1,12 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:chemicalspraying/router/routes.gr.dart'; // ✅ แก้ให้ถูก
 
 @RoutePage(name: 'ResetPasswordRoute')
-class ResetPasswordScreen extends StatelessWidget {
+class ResetPassword extends StatelessWidget {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
-  ResetPasswordScreen({super.key});
+  ResetPassword({super.key});
 
   @override
   Widget build(BuildContext context) {

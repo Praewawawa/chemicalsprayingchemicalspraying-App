@@ -9,7 +9,7 @@ class AppRouter extends $AppRouter {
         AutoRoute(path: '/login', page: LoginRoute.page),
         AutoRoute(path: '/home', page: HomeRoute.page),
         AutoRoute(path: '/userprofile', page: UserProfileRoute.page),
-        AutoRoute(path: '/edit', page: EditRoute.page),
+        AutoRoute(path: '/editprofile', page: EditProfileRoute.page),
         AutoRoute(page: AddprofileRoute.page, path: '/addprofile'),
         AutoRoute(path: '/createaccount', page: CreateAccountRoute.page),
         AutoRoute(path: '/notification', page: NotificationRoute.page),
@@ -19,6 +19,10 @@ class AppRouter extends $AppRouter {
         AutoRoute(path: '/otpverification', page: OTPVerificationRoute.page),
         AutoRoute(path: '/first', page: FirstRoute.page, initial: true),
         AutoRoute(path: '/setting', page: NotificationSettingRoute.page),
+        AutoRoute(path: '/resetpassword', page: ResetPasswordRoute.page),
+        AutoRoute(path: '/otplogin', page: OTPLoginRoute.page),
+        AutoRoute(path: '/control', page: ControlRoute.page),
+        
 
       ];
 }

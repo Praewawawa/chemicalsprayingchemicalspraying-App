@@ -7,18 +7,37 @@ import 'package:chemicalspraying/router/routes.gr.dart'; // ✅ แก้ให�
 
 @RoutePage(name: 'AddprofileRoute') // <- ให้ auto_route สร้าง AddprofileRoute ให้เรา
 class AddprofilePage extends StatefulWidget { // <-- เปลี่ยนชื่อ widget
-  const AddprofilePage({super.key});
+  AddprofilePage({super.key});
 
   @override
-  State<AddprofilePage> createState() => _AddprofilePageState();
+  State<AddprofilePage> createState() => _AddprofilePageState(
+
+  );
 }
 
 class _AddprofilePageState extends State<AddprofilePage> {
   int _selectedIndex = 0;
   // สร้างตัวแปรเพื่อเก็บค่าความเร็วลม
-  @override
+  final List<PageRouteInfo> _routes = [
+    AddprofileRoute(),
+    ControlRoute(),
+    NotificationSettingRoute(),
+    NotificationRoute(),
+    ProfileRoute(),
+  ];
+
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    context.router.replace(_routes[index]);
+  }
+@override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+      ),
       backgroundColor: const Color(0xFFF0FAFF),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -46,38 +65,18 @@ class _AddprofilePageState extends State<AddprofilePage> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.green,
         unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        currentIndex: 0,
-        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "หน้าหลัก"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "ตั้งค่า"),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "แจ้งเตือน"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "โปรไฟล์"),
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "หน้าหลัก"),
+          BottomNavigationBarItem(icon: Icon(Icons.control_camera_outlined), label: "ควบคุม"),
+          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "ตั้งค่า"),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined), label: "แจ้งเตือน"),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "โปรไฟล์"),
         ],
-        onTap: (index)
-        {
-          setState(() {
-            _selectedIndex = index;
-          });
-              switch (index) {
-                case 0:
-                  context.router.push(const AddprofileRoute()); // <-- ใช้ Route ที่ generate มา
-                  break;
-                case 1:
-                  context.router.push(const NotificationSettingRoute());
-                  break;
-                case 2:
-                  context.router.push(const NotificationRoute());
-                  break;
-                case 3:
-                  context.router.push(const ProfileRoute());
-                  break;
-              }
-
-        },
       ),
     );
   }

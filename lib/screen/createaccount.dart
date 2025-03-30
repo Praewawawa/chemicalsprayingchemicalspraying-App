@@ -81,6 +81,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           items: <String>[
                             'เพศชาย',
                             'เพศหญิง',
+                            'อื่นๆ',
                           ].map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
@@ -184,7 +185,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                       ElevatedButton(
                                         onPressed: () {
                                           Navigator.pop(context);
-                                          context.router.replaceNamed('/otpverification');
+                                          context.router.replaceNamed('/otplogin');
+                                          // Handle the confirmation logic here
+                                          // For example, you can navigate to another page or show a success message
+                                          // context.router.replaceNamed('/login');
+                                          // Show success message
                                         },
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.green,

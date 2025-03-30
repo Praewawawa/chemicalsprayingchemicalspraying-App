@@ -1,40 +1,67 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import '../router/routes.gr.dart';
+import 'package:chemicalspraying/router/routes.gr.dart'; // ✅ แก้ให้ถูก
 
-@RoutePage( name: 'ControlRoute')
-class ControlScreen extends StatelessWidget {
+@RoutePage(name: 'ControlRoute')
+class ControlScreen extends StatefulWidget {
   const ControlScreen({super.key});
+
+  @override
+  State<ControlScreen> createState() => _ControlScreenState();
+}
+
+class _ControlScreenState extends State<ControlScreen> {
+  int _selectedIndex = 1;
+
+  final List<PageRouteInfo> _routes = [
+    AddprofileRoute(),
+    ControlRoute(),
+    NotificationSettingRoute(),
+    NotificationSettingRoute(), // เปลี่ยน NotificationRoute -> NotificationSettingRoute ชั่วคราว จนกว่า generate route จริง
+    ProfileRoute(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    context.router.replace(_routes[index]);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.router.pop(),
+        ),
+        title: const Text("ควบคุมการทำงาน"),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
       backgroundColor: const Color(0xFFF0FAFF),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
           child: Column(
             children: [
-              // แถวบน: ปุ่มย้อนกลับ และ Toggle
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(Icons.arrow_back),
+                  const Text('Switch Mode', style: TextStyle(fontWeight: FontWeight.bold)),
                   Switch(
                     value: true,
                     onChanged: (val) {},
                     activeColor: Colors.green,
-                  )
+                  ),
                 ],
               ),
-
               const SizedBox(height: 10),
-
-              // ปุ่มควบคุม Auto (รูปร่างคล้ายรีโมต)
               _buildControlPad(),
-
               const SizedBox(height: 20),
-
-              // สถานะ 3 อย่าง
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: const [
@@ -43,19 +70,27 @@ class ControlScreen extends StatelessWidget {
                   _StatusCard(title: 'ปริมาณสารเคมี', value: '100%'),
                 ],
               ),
-
               const SizedBox(height: 20),
-
-              // Timer
-              _TimerControl(),
-
+              const _TimerControl(),
               const SizedBox(height: 20),
-
-              // Speed Control
-              _SpeedControl(),
+              const _SpeedControl(),
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.grey,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "หน้าหลัก"),
+          BottomNavigationBarItem(icon: Icon(Icons.control_camera_outlined), label: "ควบคุม"),
+          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "ตั้งค่า"),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined), label: "แจ้งเตือน"),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "โปรไฟล์"),
+        ],
       ),
     );
   }
@@ -66,22 +101,10 @@ class ControlScreen extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Positioned(
-            top: 0,
-            child: _controlButton(Icons.arrow_drop_up),
-          ),
-          Positioned(
-            bottom: 0,
-            child: _controlButton(Icons.arrow_drop_down),
-          ),
-          Positioned(
-            left: 0,
-            child: _controlButton(Icons.arrow_left),
-          ),
-          Positioned(
-            right: 0,
-            child: _controlButton(Icons.arrow_right),
-          ),
+          Positioned(top: 0, child: _controlButton(Icons.arrow_drop_up)),
+          Positioned(bottom: 0, child: _controlButton(Icons.arrow_drop_down)),
+          Positioned(left: 0, child: _controlButton(Icons.arrow_left)),
+          Positioned(right: 0, child: _controlButton(Icons.arrow_right)),
           CircleAvatar(
             radius: 30,
             backgroundColor: Colors.grey[200],

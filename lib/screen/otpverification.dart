@@ -1,5 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:chemicalspraying/router/routes.gr.dart'; // ✅ แก้ให้ถูก
+
 
 @RoutePage()
 class OTPVerificationScreen extends StatelessWidget {
@@ -73,7 +75,7 @@ class OTPVerificationScreen extends StatelessWidget {
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  context.router.pushNamed('/resetpassword');  // ✅ ใช้ pushNamed แทน replaceNamed
+                  context.router.push(ResetPasswordRoute());
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,

@@ -1,5 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:chemicalspraying/router/routes.gr.dart'; // ✅ แก้ให้ถูก
+import 'package:auto_route/auto_route.dart'; // << ต้องมี
+
 
 @RoutePage()
 class UserProfilePage extends StatelessWidget { // เปลี่ยนชื่อคลาส

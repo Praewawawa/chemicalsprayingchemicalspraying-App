@@ -18,7 +18,7 @@ class _ControlScreenState extends State<ControlScreen> {
     AddprofileRoute(),
     ControlRoute(),
     NotificationSettingRoute(),
-    NotificationSettingRoute(), // เปลี่ยน NotificationRoute -> NotificationSettingRoute ชั่วคราว จนกว่า generate route จริง
+    NotificationRoute(), // เปลี่ยน NotificationRoute -> NotificationSettingRoute ชั่วคราว จนกว่า generate route จริง
     ProfileRoute(),
   ];
 
@@ -29,71 +29,83 @@ class _ControlScreenState extends State<ControlScreen> {
     context.router.replace(_routes[index]);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.router.pop(),
-        ),
-        title: const Text("ควบคุมการทำงาน"),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: const Color(0xFFF0FAFF),
+    appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back, color: Colors.black),
+        onPressed: () {},
       ),
-      backgroundColor: const Color(0xFFF0FAFF),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+      actions: [
+        Switch(value: true, onChanged: (value) {}, activeColor: Colors.green),
+      ],
+    ),
+    body: Column(
+      children: [
+        SizedBox(height: 8),
+        // Control Pad
+        Center(
           child: Column(
             children: [
+              Icon(Icons.arrow_drop_up, size: 40),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Switch Mode', style: TextStyle(fontWeight: FontWeight.bold)),
-                  Switch(
-                    value: true,
-                    onChanged: (val) {},
-                    activeColor: Colors.green,
+                  Icon(Icons.arrow_left, size: 40),
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey[400],
+                    ),
+                    child: Text("Auto"),
                   ),
+                  Icon(Icons.arrow_right, size: 40),
                 ],
               ),
-              const SizedBox(height: 10),
-              _buildControlPad(),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
-                  _StatusCard(title: 'ความเร็วลม', value: '4.23 km/s'),
-                  _StatusCard(title: 'แบตเตอรี่', value: '100%'),
-                  _StatusCard(title: 'ปริมาณสารเคมี', value: '100%'),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const _TimerControl(),
-              const SizedBox(height: 20),
-              const _SpeedControl(),
+              Icon(Icons.arrow_drop_down, size: 40),
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "หน้าหลัก"),
-          BottomNavigationBarItem(icon: Icon(Icons.control_camera_outlined), label: "ควบคุม"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "ตั้งค่า"),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined), label: "แจ้งเตือน"),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "โปรไฟล์"),
-        ],
-      ),
-    );
-  }
+        SizedBox(height: 20),
+        // Status
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _StatusCard(title: 'ความเร็วลม', value: '4.23 km/s'),
+            _StatusCard(title: 'แบตเตอรี่', value: '100%'),
+            _StatusCard(title: 'ปริมาณสารเคมี', value: '100%'),
+          ],
+        ),
+        SizedBox(height: 20),
+        // Timer
+        _TimerControl(),
+        SizedBox(height: 20),
+        // Speed
+        _SpeedControl(),
+      ],
+    ),
+    bottomNavigationBar: BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: _selectedIndex,
+      onTap: _onItemTapped,
+      selectedItemColor: Colors.green,
+      unselectedItemColor: Colors.grey,
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "หน้าหลัก"),
+        BottomNavigationBarItem(icon: Icon(Icons.control_camera_outlined), label: "ควบคุม"),
+        BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined), label: "แจ้งเตือน"),
+        BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "ตั้งค่า"),
+        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "โปรไฟล์"),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildControlPad() {
     return SizedBox(

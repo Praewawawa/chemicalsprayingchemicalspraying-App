@@ -11,19 +11,20 @@ class NotificationSettingPage extends StatefulWidget {
 }
 
 class _NotificationSettingPageState extends State<NotificationSettingPage> {
-  int _selectedIndex = 2; // index ของหน้า ตั้งค่า
+  int _selectedIndex = 1; // index ของหน้า ตั้งค่า
   bool speedAlert = true;
   bool batteryAlert = true;
   bool chemicalAlert = true;
   bool routeAlert = true;
 
   final List<PageRouteInfo> _routes = [
-    AddprofileRoute(),
-    ControlRoute(),
-    NotificationSettingRoute(),
-    NotificationRoute(),
-    ProfileRoute(),
+      AddprofileRoute(),               // 0 -> Home
+      ControlRoute(),                  // 1 -> Control
+      NotificationRoute(),             // 2 -> Notification (แจ้งเตือน)
+      NotificationSettingRoute(),      // 3 -> Setting (ตั้งค่า)
+      ProfileRoute(),                  // 4 -> Profile
   ];
+
 
 
   void _onItemTapped(int index) {
@@ -87,8 +88,8 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "หน้าหลัก"),
           BottomNavigationBarItem(icon: Icon(Icons.control_camera_outlined), label: "ควบคุม"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "ตั้งค่า"),
           BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined), label: "แจ้งเตือน"),
+          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "ตั้งค่า"),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "โปรไฟล์"),
         ],
       ),

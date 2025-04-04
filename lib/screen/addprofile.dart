@@ -18,13 +18,14 @@ class AddprofilePage extends StatefulWidget { // <-- เปลี่ยนชื
 class _AddprofilePageState extends State<AddprofilePage> {
   int _selectedIndex = 0;
   // สร้างตัวแปรเพื่อเก็บค่าความเร็วลม
-  final List<PageRouteInfo> _routes = [
-    AddprofileRoute(),
-    ControlRoute(),
-    NotificationSettingRoute(),
-    NotificationRoute(),
-    ProfileRoute(),
-  ];
+    final List<PageRouteInfo> _routes = [
+        AddprofileRoute(),               // 0 -> Home
+        ControlRoute(),                  // 1 -> Control
+        NotificationRoute(),             // 2 -> Notification (แจ้งเตือน)
+        NotificationSettingRoute(),      // 3 -> Setting (ตั้งค่า)
+        ProfileRoute(),                  // 4 -> Profile
+    ];
+
 
 
   void _onItemTapped(int index) {
@@ -73,8 +74,8 @@ class _AddprofilePageState extends State<AddprofilePage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "หน้าหลัก"),
           BottomNavigationBarItem(icon: Icon(Icons.control_camera_outlined), label: "ควบคุม"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "ตั้งค่า"),
           BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined), label: "แจ้งเตือน"),
+          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "ตั้งค่า"),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "โปรไฟล์"),
         ],
       ),

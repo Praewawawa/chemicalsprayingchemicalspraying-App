@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import '../router/routes.gr.dart';
-import 'package:chemicalspraying/router/routes.gr.dart'; // ✅ แก้ให้ถูก
+import 'package:chemicalspraying/router/routes.gr.dart';
 
-@RoutePage(name: 'ControlRoute')
-class ControlScreen extends StatefulWidget {
+@RoutePage(name: 'ControlRoute') // ตั้งชื่อ route ได้ตามใจ
+class ControlScreen extends StatefulWidget { // ← ชื่อ Widget จริง ต้องไม่ใช้ชื่อ route
   const ControlScreen({super.key});
 
   @override
@@ -15,12 +15,13 @@ class _ControlScreenState extends State<ControlScreen> {
   int _selectedIndex = 1;
 
   final List<PageRouteInfo> _routes = [
-    AddprofileRoute(),
-    ControlRoute(),
-    NotificationSettingRoute(),
-    NotificationRoute(), // เปลี่ยน NotificationRoute -> NotificationSettingRoute ชั่วคราว จนกว่า generate route จริง
-    ProfileRoute(),
+    AddprofileRoute(),               // 0 -> Home
+    ControlRoute(),                  // 1 -> Control
+    NotificationRoute(),             // 2 -> Notification (แจ้งเตือน)
+    NotificationSettingRoute(),      // 3 -> Setting (ตั้งค่า)
+    ProfileRoute(),                  // 4 -> Profile
   ];
+
 
   void _onItemTapped(int index) {
     setState(() {
@@ -41,8 +42,17 @@ Widget build(BuildContext context) {
         onPressed: () {},
       ),
       actions: [
-        Switch(value: true, onChanged: (value) {}, activeColor: Colors.green),
-      ],
+    Switch(
+      value: false,
+      onChanged: (value) {
+        if (value) {
+          context.router.replace(const ControlwaypointRoute());
+          // เปลี่ยนหน้าไปที่ ControlWaypointRoute
+        }
+      },
+      activeColor: Colors.green,
+    ),
+],
     ),
     body: Column(
       children: [

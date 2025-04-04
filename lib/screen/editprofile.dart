@@ -166,14 +166,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         children: [
                           const Icon(Icons.person, color: Colors.green, size: 60),
                           const SizedBox(height: 16),
-                          const Text('ยืนยันการแก้ไข\nข้อมูลโปรไฟล์', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+                          const Text(
+                            'ยืนยันการแก้ไข\nข้อมูลโปรไฟล์',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           const SizedBox(height: 16),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('ยกเลิก', style: TextStyle(color: Colors.green)),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: TextButton.icon(
+                                  onPressed: () {
+                                    Navigator.pop(context); // ปิด Dialog
+                                    context.router.replace(const ProfileRoute()); // ไปหน้า Profile
+                                  },
+                                  icon: const Icon(Icons.close, color: Colors.red),
+                                  label: const Text(
+                                    'ยกเลิก',
+                                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
                               ),
                               ElevatedButton(
                                 onPressed: () => Navigator.pop(context, true),
@@ -181,7 +195,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 child: const Text('ยืนยัน'),
                               ),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -196,20 +210,26 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         content: Column(
                           mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.check_circle, color: Colors.green, size: 60),
-                            const SizedBox(height: 16),
-                            const Text('บันทึกข้อมูลสำเร็จ', style: TextStyle(fontWeight: FontWeight.bold)),
+                          children: const [
+                            Icon(Icons.check_circle, color: Colors.green, size: 60),
+                            SizedBox(height: 16),
+                            Text(
+                              'บันทึกข้อมูลสำเร็จ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       ),
                     );
 
                     // ไปหน้าโปรไฟล์
-                    context.router.replaceNamed('/profile');
+                    context.router.replace(const ProfileRoute());
                   }
                 },
-                child: const Text('บันทึก', style: TextStyle(fontSize: 16)),
+                child: const Text(
+                  'บันทึก',
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             ),
           ],

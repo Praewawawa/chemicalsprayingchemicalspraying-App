@@ -1,160 +1,187 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:auto_route/auto_route.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:chemicalspraying/router/routes.gr.dart'; // ✅ แก้ให้ถูก
+import 'package:chemicalspraying/router/routes.gr.dart';
 
-class MapWithWaypointUI extends StatefulWidget {
-  const MapWithWaypointUI({super.key});
+@RoutePage(name: 'ControlwaypointRoute')
+class ControlwaypoinPage extends StatefulWidget {
+  const ControlwaypoinPage({super.key});
 
   @override
-  State<MapWithWaypointUI> createState() => _MapWithWaypointUIState();
+  State<ControlwaypoinPage> createState() => _ControlwaypoinPageState();
+  // <-- เปลี่ยนชื่อ widget
 }
 
-class _MapWithWaypointUIState extends State<MapWithWaypointUI> {
-  GoogleMapController? _controller;
-  List<LatLng> _waypoints = [];
-  int _relay = 5000;
+class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
+  int _selectedIndex = 1; // index ให้ตรงกับ bottom nav
+  List<LatLng> waypoints = [];
 
+  // ---- 1. เพิ่มจุด ----
   void _addWaypoint(LatLng point) {
     setState(() {
-      _waypoints.add(point);
+      waypoints.add(point);
     });
   }
 
+  // ---- 2. ลบจุด ----
   void _removeWaypoint(int index) {
     setState(() {
-      _waypoints.removeAt(index);
+      waypoints.removeAt(index);
     });
+  }
+
+  // ---- 3. ส่ง Waypoints ไปยัง Raspberry Pi ----
+  Future<void> _sendToRaspberryPi() async {
+    final url = Uri.parse('http://<IP-ADDRESS-PI>:5000/waypoints'); // <-- เปลี่ยนเป็น IP จริงของ Pi
+
+    final data = waypoints
+        .map((point) => {'lat': point.latitude, 'lon': point.longitude})
+        .toList();
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'waypoints': data}),
+    );
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("ส่งข้อมูลสำเร็จ")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("ส่งข้อมูลไม่สำเร็จ")),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0FAFF),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            GoogleMap(
-              initialCameraPosition: const CameraPosition(
-                target: LatLng(13.7563, 100.5018),
-                zoom: 16,
-              ),
-              onMapCreated: (controller) => _controller = controller,
-              markers: _waypoints
-                  .asMap()
-                  .entries
-                  .map(
-                    (e) => Marker(
-                      markerId: MarkerId('waypoint_${e.key}'),
-                      position: e.value,
-                      icon: BitmapDescriptor.defaultMarkerWithHue(
-                        e.key == 0 ? BitmapDescriptor.hueGreen : BitmapDescriptor.hueViolet,
-                      ),
-                    ),
-                  )
-                  .toSet(),
-              onTap: _addWaypoint,
-            ),
-
-            // ปุ่ม Save (มุมล่างขวา)
-            Positioned(
-              bottom: 220,
-              right: 16,
-              child: FloatingActionButton(
-                backgroundColor: Colors.green,
-                onPressed: () {},
-                child: const Icon(Icons.save_alt),
-              ),
-            ),
-
-            // ตาราง Waypoint
-            Positioned(
-              bottom: 80,
-              left: 16,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      blurRadius: 5,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ..._waypoints.asMap().entries.map((e) => Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('${e.key + 1} Waypoint  Lat: ${e.value.latitude.toStringAsFixed(5)}  Lng: ${e.value.longitude.toStringAsFixed(5)}'),
-                            IconButton(
-                              icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                              onPressed: () => _removeWaypoint(e.key),
-                            )
-                          ],
-                        )),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Relay'),
-                        SizedBox(
-                          width: 80,
-                          child: TextFormField(
-                            initialValue: _relay.toString(),
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              isDense: true,
-                              border: OutlineInputBorder(),
-                            ),
-                            onChanged: (v) => setState(() => _relay = int.tryParse(v) ?? 0),
-                          ),
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // ปุ่ม Start / Cancel
-            Positioned(
-              bottom: 20,
-              left: 16,
-              right: 16,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      onPressed: () {},
-                      child: const Text('เริ่ม'),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey.shade300,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      onPressed: () {},
-                      child: const Text('ยกเลิก'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {},
         ),
+        actions: [
+        Switch(
+          value: true,
+          onChanged: (value) {
+            if (!value) {
+              context.router.replace(const ControlRoute());
+            }
+          },
+          activeColor: Colors.green,
+        ),
+    ],
+
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Column(
+        children: [
+          // --------- Map ---------
+          Expanded(
+            child: FlutterMap(
+              options: MapOptions(
+                center: LatLng(19.0332772, 99.89286762),
+                zoom: 16,
+                onTap: (tapPosition, point) => _addWaypoint(point),
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                  subdomains: ['a', 'b', 'c'],
+                ),
+                // --------- Polyline ---------
+                PolylineLayer(
+                  polylines: [
+                    Polyline(
+                      points: waypoints,
+                      strokeWidth: 3,
+                      color: Colors.green,
+                    ),
+                  ],
+                ),
+                // --------- Markers ---------
+                MarkerLayer(
+                  markers: waypoints.asMap().entries.map((entry) {
+                    int index = entry.key;
+                    LatLng point = entry.value;
+                    return Marker(
+                      point: point,
+                      width: 40,
+                      height: 40,
+                      child: GestureDetector(
+                          onLongPress: () => _removeWaypoint(index),
+                          child: const Icon(Icons.location_on, color: Colors.green, size: 40),
+                      ),
+                  );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+          // --------- Info ---------
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF0FAFF),
+              border: Border(top: BorderSide(color: Colors.grey)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    "${waypoints.length} Waypoints  |  Lat ${waypoints.isNotEmpty ? waypoints.last.latitude.toStringAsFixed(6) : '-'}  |  Lon ${waypoints.isNotEmpty ? waypoints.last.longitude.toStringAsFixed(6) : '-'}",
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text("Relay"),
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: 60,
+                  height: 30,
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                    ),
+                    controller: TextEditingController(text: "5000"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // --------- Control Buttons ---------
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  onPressed: _sendToRaspberryPi, // <-- ส่งข้อมูล
+                  child: const Text("เริ่ม"),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                  onPressed: () {
+                    setState(() => waypoints.clear()); // เคลียร์จุด
+                  },
+                  child: const Text("ยกเลิก"),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }

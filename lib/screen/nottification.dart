@@ -16,11 +16,11 @@ class _NotificationPageState extends State<NotificationPage> {
 
   // ✅ ต้องใส่ const หน้า route constructor
   final List<PageRouteInfo> _routes = [
-    AddprofileRoute(),
-    ControlRoute(),
-    NotificationSettingRoute(),
-    NotificationRoute(),
-    ProfileRoute(),
+    AddprofileRoute(),               // 0 -> Home
+    ControlRoute(),                  // 1 -> Control
+    NotificationRoute(),             // 2 -> Notification (แจ้งเตือน)
+    NotificationSettingRoute(),      // 3 -> Setting (ตั้งค่า)
+    ProfileRoute(),                  // 4 -> Profile
   ];
 
   void _onItemTapped(int index) {
@@ -35,45 +35,69 @@ class _NotificationPageState extends State<NotificationPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF0FAFF),
       appBar: AppBar(
-        title: const Text("ควบคุมการทำงาน"),
+        title: const Text('แจ้งเตือน'),
         centerTitle: true,
-        backgroundColor: Colors.white,
         elevation: 0,
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Icon(Icons.arrow_back),
-                  Switch(
-                    value: true,
-                    onChanged: (val) {},
-                    activeColor: Colors.green,
-                  )
-                ],
-              ),
-              const SizedBox(height: 10),
-              _buildControlPad(),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
-                  _StatusCard(title: 'ความเร็วลม', value: '4.23 km/s'),
-                  _StatusCard(title: 'แบตเตอรี่', value: '100%'),
-                  _StatusCard(title: 'ปริมาณสารเคมี', value: '100%'),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const _TimerControl(),
-              const SizedBox(height: 20),
-              const _SpeedControl(),
-            ],
-          ),
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.router.pop(),
         ),
+      ),
+      body: Column(
+        children: [
+          SizedBox(
+            height: 50,
+            child: DefaultTabController(
+              length: 3,
+              child: TabBar(
+                labelColor: Colors.black,
+                indicatorColor: Colors.green,
+                tabs: const [
+                  Tab(text: "ทั่วไป"),
+                  Tab(text: "ปริมาณแบตเตอรี่"),
+                  Tab(text: "ปริมาณสารเคมี"),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Notification List
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                _buildNotificationCard(
+                  context,
+                  icon: Icons.battery_alert,
+                  title: "ปริมาณแบตเตอรี่",
+                  subtitle: "ปริมาณแบตเตอรี่ต่ำกว่า 10% โปรดชาร์จแบตเตอรี่ก่อนออกงาน",
+                  time: "1 นาทีที่แล้ว",
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationDetailPage(title: "ปริมาณแบตเตอรี่")));
+                  },
+                ),
+                _buildNotificationCard(
+                  context,
+                  icon: Icons.local_drink,
+                  title: "ปริมาณสารเคมี",
+                  subtitle: "ปริมาณสารเคมีลดลงต่ำกว่า 20% โปรดเติมปริมาณสารเคมี",
+                  time: "3 นาทีที่แล้ว",
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationDetailPage(title: "ปริมาณสารเคมี")));
+                  },
+                ),
+                _buildNotificationCard(
+                  context,
+                  icon: Icons.speed,
+                  title: "ความเร็วลม",
+                  subtitle: "ความเร็วลมสูงเกินไปอาจทำให้สารเคมีกระจายตัวไม่สม่ำเสมอ",
+                  time: "8 นาทีที่แล้ว",
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -91,128 +115,52 @@ class _NotificationPageState extends State<NotificationPage> {
       ),
     );
   }
-}
 
-
-  Widget _buildControlPad() {
-    return SizedBox(
-      width: 200,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(top: 0, child: _controlButton(Icons.arrow_drop_up)),
-          Positioned(bottom: 0, child: _controlButton(Icons.arrow_drop_down)),
-          Positioned(left: 0, child: _controlButton(Icons.arrow_left)),
-          Positioned(right: 0, child: _controlButton(Icons.arrow_right)),
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.grey[200],
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.text_fields, color: Colors.grey),
-                Text('Auto', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              ],
-            ),
+  Widget _buildNotificationCard(BuildContext context,
+      {required IconData icon,
+      required String title,
+      required String subtitle,
+      required String time,
+      VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.only(bottom: 12),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.red[100],
+            child: Icon(icon, color: Colors.red),
           ),
-        ],
+          title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text(subtitle),
+          trailing: Text(time, style: const TextStyle(fontSize: 12)),
+        ),
       ),
     );
   }
+}
 
-  Widget _controlButton(IconData icon) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[400],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.all(10),
-      child: Icon(icon, color: Colors.white),
-    );
-  }
+//✅ NotificationDetailPage (หน้าแสดงรายละเอียด)
 
-
-class _StatusCard extends StatelessWidget {
+class NotificationDetailPage extends StatelessWidget {
   final String title;
-  final String value;
 
-  const _StatusCard({required this.title, required this.value});
+  const NotificationDetailPage({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 90,
-      height: 60,
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+        backgroundColor: Colors.green,
       ),
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        children: [
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(title, style: const TextStyle(fontSize: 12)),
-        ],
+      body: Center(
+        child: Text(
+          "รายละเอียดของ $title",
+          style: const TextStyle(fontSize: 20),
+        ),
       ),
-    );
-  }
-}
-
-class _TimerControl extends StatelessWidget {
-  const _TimerControl();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Text("Timer", style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Switch(value: true, onChanged: (v) {}, activeColor: Colors.green),
-            const SizedBox(width: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text("00 : 01 : 0"),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _SpeedControl extends StatelessWidget {
-  const _SpeedControl();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Text("Speed", style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Switch(value: true, onChanged: (v) {}, activeColor: Colors.green),
-            const SizedBox(width: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text("1"),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }

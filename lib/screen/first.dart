@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
-
+import 'package:chemicalspraying/components/app_button.dart';
 
 @RoutePage()
 class FirstPage extends StatelessWidget {
@@ -60,42 +60,15 @@ class FirstPage extends StatelessWidget {
                 // ปุ่ม
                 Column(
                   children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          context.router.push(const LoginRoute());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text("เข้าสู่ระบบ"),
-                      ),
-                    ),
+                    
                     const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          context.router.push(const CreateAccountRoute());
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.green),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text(
-                          "สมัครสมาชิก",
-                          style: TextStyle(color: Colors.green),
-                        ),
-                      ),
-                    ),
+                    AppButton(title: "เข้าสู่ระบบ", onPressed: () {
+                      print("เข้าสู่ระบบ");
+                    }),
+                    const SizedBox(height: 12),
+                    AppButton(title: "outline", type: ButtonType.outlined, onPressed: () {
+                      print("สมัครสมาชิก");
+                    }),
                   ],
                 ),
               ],

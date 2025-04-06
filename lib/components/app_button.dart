@@ -14,9 +14,9 @@ enum ButtonType {
 class AppButton extends StatefulWidget {
   final  String title;
   final bool isLoading;
-   final ThemeButton? theme;
-   final ButtonType? type;
-   final VoidCallback? onPressed;
+  final ThemeButton? theme;
+  final ButtonType? type;
+  final VoidCallback? onPressed;
   const AppButton({super.key, required this.title, this.isLoading = false, this.onPressed, this.theme, this.type});
 
   @override

@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:chemicalspraying/router/routes.gr.dart'; // ✅ แก้ให้ถูก
+import 'package:chemicalspraying/router/routes.gr.dart'; 
+import 'package:chemicalspraying/components/app_button.dart';
 
 
 @RoutePage()
@@ -69,26 +70,11 @@ class OTPVerificationScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.green, fontSize: 14),
               ),
             ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  context.router.push(ResetPasswordRoute());
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  'ยืนยัน',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+            const SizedBox(height: 12),
+                    AppButton(title: "ยืนยัน", onPressed: () {
+                      context.router.push(ResetPasswordRoute());
+                      print("ยืนยัน");
+                    }),
           ],
         ),
       ),

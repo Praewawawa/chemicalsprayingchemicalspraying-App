@@ -63,10 +63,12 @@ class FirstPage extends StatelessWidget {
                     
                     const SizedBox(height: 12),
                     AppButton(title: "เข้าสู่ระบบ", onPressed: () {
+                      context.router.push(const LoginRoute());
                       print("เข้าสู่ระบบ");
                     }),
                     const SizedBox(height: 12),
-                    AppButton(title: "outline", type: ButtonType.outlined, onPressed: () {
+                    AppButton(title: "สมัครสมาชิก", type: ButtonType.outlined, onPressed: () {
+                      context.router.push(const CreateAccountRoute());
                       print("สมัครสมาชิก");
                     }),
                   ],

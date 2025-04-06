@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:chemicalspraying/router/routes.gr.dart'; // ✅ แก้ให้ถูก
+import 'package:chemicalspraying/router/routes.gr.dart'; 
+import 'package:chemicalspraying/components/app_button.dart';
 
 @RoutePage(name: 'ResetPasswordRoute')
 class ResetPassword extends StatelessWidget {
@@ -46,26 +47,11 @@ class ResetPassword extends StatelessWidget {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () {
-                    context.router.replaceNamed('/login');
-                  },
-                  child: const Text(
-                    'ยืนยัน',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ),
-              ),
+              const SizedBox(height: 12),
+                    AppButton(title: "ยืนยัน", onPressed: () {
+                      context.router.replaceNamed('/login');
+                      print("ยืนยัน");
+                    }),
             ],
           ),
         ),

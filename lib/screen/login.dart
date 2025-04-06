@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:chemicalspraying/router/routes.gr.dart'; // เปลี่ยน your_app_name ให้ตรงกับชื่อโปรเจกต์
+import 'package:chemicalspraying/components/app_button.dart';
 
 
 @RoutePage()
@@ -111,56 +112,18 @@ class LoginPage extends StatelessWidget {
                           color: Color.fromRGBO(121, 118, 118, 1), fontSize: 14),
                       ),
                     ),
-
-                    // Login Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton(
-                    onPressed: () {
+                    const SizedBox(height: 12),
+                    AppButton(title: "เข้าสู่ระบบ", onPressed: () {
                       context.router.replaceNamed('/addprofile');
-                    },// เพิ่ม navigation logic ที่นี่
-                    
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green, // ปุ่มเขียว
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                    ),
-                    child: const Text(
-                      'เข้าสู่ระบบ',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Register Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      context.router.replaceNamed('/createaccount');// เพิ่ม navigation ไปยังหน้าสมัครสมาชิก
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.green, width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                    ),
-                    child: const Text(
-                      'สร้างบัญชีสมาชิก',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
+                      print("เข้าสู่ระบบ");
+                    }),
+                    const SizedBox(height: 12),
+                    AppButton(title: "สมัครสมาชิก", type: ButtonType.outlined, onPressed: () {
+                      context.router.replaceNamed('/createaccount');
+                      print("สมัครสมาชิก");
+                    }),
+                    // Login Button
+                
                 /*SizedBox(
                   height: 109,
                 ),

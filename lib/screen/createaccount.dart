@@ -204,7 +204,16 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           },
                         );
                     },
-
+                    const SizedBox(height: 12),
+                    AppButton(title: "เข้าสู่ระบบ", onPressed: () {
+                      context.router.push(const LoginRoute());
+                      print("เข้าสู่ระบบ");
+                    }),
+                    const SizedBox(height: 12),
+                    AppButton(title: "ฉันมีบัญชีอยู่แล้ว", type: ButtonType.outlined, onPressed: () {
+                      context.router.replaceNamed('/login');
+                      print("ฉันมีบัญชีอยู่แล้ว");
+                    }),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color.fromRGBO(71, 192, 61, 1),
                           padding: EdgeInsets.symmetric(
@@ -219,37 +228,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
                               fontSize: 18),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                // "ฉันมีบัญชีอยู่แล้ว" Button
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          context.router.replaceNamed('/login');
-                          // Handle already have an account logic here
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                              vertical: 20), // Remove horizontal padding
-                          side: BorderSide(
-                              color: Color.fromRGBO(71, 192, 61, 1), width: 2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                          ),
-                        ),
-                        child: Text(
-                          'ฉันมีบัญชีอยู่แล้ว',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
                         ),
                       ),
                     ),

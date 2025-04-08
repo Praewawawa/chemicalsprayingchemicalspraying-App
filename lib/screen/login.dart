@@ -113,12 +113,18 @@ class LoginPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    AppButton(title: "เข้าสู่ระบบ", onPressed: () {
+                    AppButton(title: "เข้าสู่ระบบ",
+                        width: 357,
+                        height: 65,
+                      onPressed: () {
                       context.router.replaceNamed('/addprofile');
                       print("เข้าสู่ระบบ");
                     }),
                     const SizedBox(height: 12),
-                    AppButton(title: "สมัครสมาชิก", type: ButtonType.outlined, onPressed: () {
+                    AppButton(title: "สมัครสมาชิก",
+                        width: 357,
+                        height: 65,
+                    type: ButtonType.outlined, onPressed: () {
                       context.router.replaceNamed('/createaccount');
                       print("สมัครสมาชิก");
                     }),

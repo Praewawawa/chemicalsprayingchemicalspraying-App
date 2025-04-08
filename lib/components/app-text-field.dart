@@ -3,93 +3,98 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/language/language_bloc.dart';
 import '../bloc/language/language_state.dart';
 import '../constants/color.dart';
-import '../constants/size.dart';
+import '../constants/size.dart'; 
 import '../models/language.dart';
 
-class AppTextField extends StatefulWidget {
-  const AppTextField(
-      {required this.title,
-      this.focusNode,
-      this.hitText = "",
-      this.titleColor = blackColor,
-      this.validator,
-      this.onChanged,
-      this.onTapOutside,
-      this.textInputAction,
-      this.autovalidateMode,
-      this.obscureText = false,
-      this.controller,
-      this.onFieldSubmitted,
-      this.onEditingComplete,
-      this.suffixTop,
-      this.suffixBottom,
-      this.keyboardType = TextInputType.text,
-      this.backgroundColor = whiteColor,
-      this.borderColor = borderInputColor,
-      this.borderFocusColor = primaryColor,
-      this.cursorColor = primaryColor,
-      this.textColor = blackColor,
-      this.required = false,
-      this.enabled = true,
-      this.isTextAlignCenter = false,
-      this.isStep = false,
-      this.minLines = 1,
-      this.maxLines = 1,
-      this.onStepDown,
-      this.onStepUp,
-      this.height,
-      this.width,
-      super.key});
+class AppTextField extends StatefulWidget { //สร้างคลาส AppTextField เพื่อใช้ในการสร้าง TextField
+  //สร้าง TextField ที่สามารถใช้งานได้ง่ายขึ้น โดยมีการกำหนดค่าต่างๆ เช่น สี ขนาด ฟอนต์ และการตรวจสอบความถูกต้องของข้อมูล
+  const AppTextField( // Constructor
+      {required this.title, //เป็นชื่อของ TextField
+      this.focusNode, //เป็น FocusNode ของ TextField
+      this.hitText = "", //เป็นข้อความที่แสดงเมื่อไม่มีการกรอกข้อมูลใน TextField
+      this.titleColor = blackColor, //เป็นสีของชื่อ TextField
+      this.validator, //เป็นฟังก์ชันที่ใช้ตรวจสอบความถูกต้องของข้อมูลที่กรอกใน TextField
+      this.onChanged, //เป็นฟังก์ชันที่ใช้เมื่อมีการเปลี่ยนแปลงข้อมูลใน TextField
+      this.onTapOutside, //เป็นฟังก์ชันที่ใช้เมื่อมีการคลิกนอก TextField
+      this.textInputAction, //เป็น Action ของ TextInput
+      this.autovalidateMode, //เป็นโหมดการตรวจสอบความถูกต้องของข้อมูลใน TextField
+      this.obscureText = false, //เป็นการซ่อนข้อความใน TextField
+      this.controller, //เป็น Controller ของ TextField
+      this.onFieldSubmitted, //เป็นฟังก์ชันที่ใช้เมื่อมีการส่งข้อมูลใน TextField
+      this.onEditingComplete, //เป็นฟังก์ชันที่ใช้เมื่อมีการแก้ไขข้อมูลใน TextFieldเสร็จสิ้น
+      this.suffixTop, //เป็น Widget ที่แสดงด้านบนของ TextField
+      this.suffixBottom, //เป็น Widget ที่แสดงด้านล่างของ TextField
+      this.keyboardType = TextInputType.text,  //เป็นประเภทของ Keyboard ที่แสดงเมื่อมีการคลิกที่ TextField
+      this.backgroundColor = whiteColor, //เป็นสีพื้นหลังของ TextField
+      this.borderColor = borderInputColor, //เป็นสีของกรอบ TextField
+      this.borderFocusColor = primaryColor, //เป็นสีของกรอบ TextField เมื่อมีการ Focus
+      this.cursorColor = primaryColor, //เป็นสีของ Cursor ใน TextField
+      this.controller, //เป็น Controller ของ TextField
+      this.textColor = blackColor, //เป็นสีของข้อความใน TextField
+      this.required = false, //เป็นการกำหนดว่าต้องกรอกข้อมูลใน TextField หรือไม่
+      this.enabled = true, //เป็นการกำหนดว่า TextField สามารถกรอกข้อมูลได้หรือไม่
+      this.isTextAlignCenter = false, //เป็นการกำหนดว่า TextField จะจัดข้อความไปที่กลางหรือไม่
+      this.isStep = false, //เป็นการกำหนดว่า TextField เป็นแบบ Step หรือไม่
+      this.minLines = 1, //เป็นจำนวนบรรทัดขั้นต่ำของ TextField
+      this.maxLines = 1, //เป็นจำนวนบรรทัดสูงสุดของ TextField
+      this.onStepDown, //เป็นฟังก์ชันที่ใช้เมื่อมีการกดปุ่ม Step Down
+      this.onStepUp, //เป็นฟังก์ชันที่ใช้เมื่อมีการกดปุ่ม Step Up
+      this.height = 50, //เป็นความสูงของ TextField
+      this.height, //เป็นความสูงของ TextField
+      this.width, //เป็นความกว้างของ TextField
+      super.key}); //เป็นการกำหนดค่าต่างๆ ของ TextField
 
-  final String title;
-  final Color? titleColor;
-  final FocusNode? focusNode;
-  final String hitText;
-  final FormFieldValidator<String>? validator;
-  final ValueChanged<String>? onChanged;
-  final Function()? onTapOutside;
-  final TextInputAction? textInputAction;
-  final AutovalidateMode? autovalidateMode;
-  final bool obscureText;
-  final TextEditingController? controller;
-  final ValueChanged<String>? onFieldSubmitted;
-  final VoidCallback? onEditingComplete;
-  final Widget? suffixTop;
-  final Widget? suffixBottom;
-  final TextInputType keyboardType;
-  final Color backgroundColor;
-  final Color borderColor;
-  final Color borderFocusColor;
-  final Color cursorColor;
-  final Color textColor;
-  final bool required;
-  final bool enabled;
-  final bool isStep;
-  final bool isTextAlignCenter;
-  final int minLines;
-  final int? maxLines;
-  final double? height;
-  final double? width;
-  final Function()? onStepDown;
-  final Function()? onStepUp;
+  final String title; //เป็นชื่อของ TextField
+  final Color? titleColor; //เป็นสีของชื่อ TextField
+  final FocusNode? focusNode; //เป็น FocusNode ของ TextField
+  final LanguageBloc? languageBloc; //เป็น Bloc ของภาษา
+  final String hitText; //เป็นข้อความที่แสดงเมื่อไม่มีการกรอกข้อมูลใน TextField
+  final FormFieldValidator<String>? validator; //เป็นฟังก์ชันที่ใช้ตรวจสอบความถูกต้องของข้อมูลที่กรอกใน TextField
+  final ValueChanged<String>? onChanged; //เป็นฟังก์ชันที่ใช้เมื่อมีการเปลี่ยนแปลงข้อมูลใน TextField
+  final Function()? onTapOutside; //เป็นฟังก์ชันที่ใช้เมื่อมีการคลิกนอก TextField
+  final TextInputAction? textInputAction; //เป็น Action ของ TextInput 
+  final AutovalidateMode? autovalidateMode; //เป็นโหมดการตรวจสอบความถูกต้องของข้อมูลใน TextField
+  final bool obscureText;   //เป็นการซ่อนข้อความใน TextField
+  final TextEditingController? controller;  //เป็น Controller ของ TextField
+  final ValueChanged<String>? onFieldSubmitted;   //เป็นฟังก์ชันที่ใช้เมื่อมีการส่งข้อมูลใน TextField
+  final VoidCallback? onEditingComplete;  //เป็นฟังก์ชันที่ใช้เมื่อมีการแก้ไขข้อมูลใน TextFieldเสร็จสิ้น
+  final Widget? suffixTop;  //เป็น Widget ที่แสดงด้านบนของ TextField
+  final Widget? suffixBottom; //เป็น Widget ที่แสดงด้านล่างของ TextField
+  final TextInputType keyboardType; //เป็นประเภทของ Keyboard ที่แสดงเมื่อมีการคลิกที่ TextField
+  final Color backgroundColor; //เป็นสีพื้นหลังของ TextField
+  final Color borderColor;  //เป็นสีของกรอบ TextField
+  final Color borderColorError; //เป็นสีของกรอบ TextField เมื่อมีการ Focus
+  final Color borderFocusColor; //เป็นสีของกรอบ TextField เมื่อมีการ Focus
+  final Color cursorColor; //เป็นสีของ Cursor ใน TextField
+  final Color textColor; //เป็นสีของข้อความใน TextField
+  final bool required; //เป็นการกำหนดว่าต้องกรอกข้อมูลใน TextField หรือไม่
+  final bool enabled;   //เป็นการกำหนดว่า TextField สามารถกรอกข้อมูลได้หรือไม่
+  final bool isStep; //เป็นการกำหนดว่า TextField เป็นแบบ Step หรือไม่
+  final bool isTextAlignCenter;   //เป็นการกำหนดว่า TextField จะจัดข้อความไปที่กลางหรือไม่
+  final int minLines;   //เป็นจำนวนบรรทัดขั้นต่ำของ TextField
+  final int? maxLines; //เป็นจำนวนบรรทัดสูงสุดของ TextField
+  final double? height; //เป็นความสูงของ TextField
+  final double? width; //เป็นความกว้างของ TextField
+  final Function()? onStepDown; //เป็นฟังก์ชันที่ใช้เมื่อมีการกดปุ่ม Step Down
+  final Function()? onStepUp;  //เป็นฟังก์ชันที่ใช้เมื่อมีการกดปุ่ม Step Up
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
 }
 
-class _AppTextFieldState extends State<AppTextField> {
+class _AppTextFieldState extends State<AppTextField> { // State ของ AppTextField
   String? _validationError;
   final GlobalKey<FormFieldState> _fieldKey = GlobalKey<FormFieldState>();
 
-  Language? curLang;
+  Language? curLang; //ตัวแปรที่ใช้เก็บค่าภาษา
 
-  _initLanguage(Language newLang) {
+  _initLanguage(Language newLang) { //ฟังก์ชันที่ใช้ในการกำหนดค่าภาษา
     if (curLang == null || curLang != newLang) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_validationError != null) {
           _fieldKey.currentState?.validate();
         }
-        setState(() {
+        setState(() { //ทำการเปลี่ยนแปลงค่าภาษา
           curLang = newLang;
         });
       });
@@ -97,50 +102,93 @@ class _AppTextFieldState extends State<AppTextField> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) { //ฟังก์ชันที่ใช้ในการสร้าง Widget
     bool isError = _validationError != null && _validationError != "";
     return BlocBuilder<LanguageBloc, LanguageState>(
       builder: (context, state) {
         _initLanguage(state.selectedLanguage);
-        return Stack(
-          children: [
+        return Stack(  //สร้าง Stack เพื่อให้สามารถวาง Widget ซ้อนกันได้
+          children: [ 
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.title != '')
+                if (widget.title != '') //ถ้ามีชื่อ TextField
                   Row(
-                    children: [
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: widget.controller,
+                      obscureText: widget.isPassword,
+                      keyboardType: widget.keyboardType,
+                      focusNode: widget.focusNode,
+                      validator: widget.validator,
+                      onChanged: widget.onChanged,
+                      decoration: InputDecoration(
+                        labelText: widget.title,
+                        labelStyle: TextStyle(
+                          color: isError
+                              ? redColor
+                              : widget.focusNode?.hasFocus == true
+                                  ? greenColor
+                                  : Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        floatingLabelBehavior: FloatingLabelBehavior.auto,
+                        filled: true,
+                        fillColor: Colors.white,
+                        hintText: widget.hint,
+                        hintStyle: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+                        contentPadding: const EdgeInsets.all(16),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Colors.grey),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: greenColor, width: 2),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: redColor),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: redColor),
+                        ),
+                      ),
+                    ),
+
+                    children: [ //สร้าง Row เพื่อให้สามารถวาง Widget ซ้อนกันได้
                       Expanded(
                         child: Text.rich(
                           TextSpan(
                             children: <InlineSpan>[
-                              TextSpan(
+                              TextSpan( //สร้าง TextSpan เพื่อให้สามารถวาง Widget ซ้อนกันได้
                                 text: widget.title,
                               ),
-                              if (widget.required)
+                              if (widget.required) //ถ้ามีการกำหนดให้ต้องกรอกข้อมูล
                                 const TextSpan(
                                     text: "*",
                                     style: TextStyle(color: redColor))
                             ],
-                            style: TextStyle(
+                            style: TextStyle( //กำหนด Style ของ TextSpan
                                 fontSize: 14, color: widget.titleColor),
                           ),
-                          overflow: TextOverflow.ellipsis,
+                          overflow: TextOverflow.ellipsis, //ถ้ามีการกำหนดให้ต้องกรอกข้อมูล
                         ),
                       ),
                       if (widget.suffixTop != null) widget.suffixTop!
                     ],
                   ),
                 const SizedBox(height: 4),
-                SizedBox(
+                SizedBox( //สร้าง SizedBox เพื่อให้สามารถกำหนดขนาดของ Widget ได้
                   height: widget.height,
                   child: TextFormField(
                     textAlign: widget.isTextAlignCenter
                         ? TextAlign.center
                         : TextAlign.start,
                     key: _fieldKey,
-                    style: TextStyle(
+                    style: TextStyle( //กำหนด Style ของ TextFormField
                         color: widget.enabled ? widget.textColor : grayIOSColor,
                         fontSize: 16),
                     focusNode: widget.focusNode,
@@ -156,7 +204,7 @@ class _AppTextFieldState extends State<AppTextField> {
                       widget.onTapOutside?.call();
                       widget.focusNode?.unfocus();
                     },
-                    onChanged: (value) {
+                    onChanged: (value) { //เมื่อมีการเปลี่ยนแปลงข้อมูลใน TextField
                       widget.onChanged?.call(value);
                       if (widget.autovalidateMode !=
                           AutovalidateMode.onUserInteraction) {
@@ -169,30 +217,30 @@ class _AppTextFieldState extends State<AppTextField> {
                         }
                       }
                     },
-                    decoration: InputDecoration(
+                    decoration: InputDecoration(  //กำหนด Decoration ของ TextFormField
                       fillColor: widget.backgroundColor,
                       errorStyle: const TextStyle(fontSize: 0.01),
-                      focusedBorder: OutlineInputBorder(
+                      focusedBorder: OutlineInputBorder( //กำหนดกรอบของ TextFormField เมื่อมีการ Focus
                         borderRadius:
                             BorderRadius.circular(borderRadiusTextfieldSize),
                         borderSide: BorderSide(
                           color: isError ? redColor : widget.borderFocusColor,
                         ),
                       ),
-                      enabledBorder: OutlineInputBorder(
+                      enabledBorder: OutlineInputBorder( //กำหนดกรอบของ TextFormField เมื่อมีการ Enable
                         borderRadius:
                             BorderRadius.circular(borderRadiusTextfieldSize),
                         borderSide: BorderSide(
                             color: isError ? redColor : widget.borderColor),
                       ),
-                      errorBorder: OutlineInputBorder(
+                      errorBorder: OutlineInputBorder( //กำหนดกรอบของ TextFormField เมื่อมีการ Error
                         borderRadius:
                             BorderRadius.circular(borderRadiusTextfieldSize),
                         borderSide: BorderSide(
                             color: isError ? redColor : widget.borderColor,
                             width: 1),
                       ),
-                      focusedErrorBorder: OutlineInputBorder(
+                      focusedErrorBorder: OutlineInputBorder( //กำหนดกรอบของ TextFormField เมื่อมีการ Focus และ Error
                         borderRadius:
                             BorderRadius.circular(borderRadiusTextfieldSize),
                         borderSide: BorderSide(
@@ -203,7 +251,7 @@ class _AppTextFieldState extends State<AppTextField> {
                       isDense: true,
                       contentPadding: const EdgeInsets.all(12),
                       suffixIcon: widget.isStep
-                          ? Row(
+                          ? Row( //สร้าง Row เพื่อให้สามารถวาง Widget ซ้อนกันได้ 
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
@@ -218,23 +266,23 @@ class _AppTextFieldState extends State<AppTextField> {
                             )
                           : null,
                     ),
-                    validator: (value) {
+                    validator: (value) { //เมื่อมีการตรวจสอบความถูกต้องของข้อมูลใน TextField
                       String? error = widget.validator?.call(value);
 
                       WidgetsBinding.instance.addPostFrameCallback((_) {
-                        setState(() {
+                        setState(() { //ทำการเปลี่ยนแปลงค่าภาษา
                           _validationError = error;
                         });
                       });
                       return error;
-                    },
+                    }, //เมื่อมีการตรวจสอบความถูกต้องของข้อมูลใน TextField
                     onFieldSubmitted: widget.onFieldSubmitted,
                     textInputAction: widget.textInputAction,
                     autovalidateMode: widget.autovalidateMode,
                   ),
                 ),
-                widget.validator != null
-                    ? Container(
+                widget.validator != null 
+                    ? Container( //สร้าง Container เพื่อให้สามารถกำหนดขนาดของ Widget ได้
                         padding: const EdgeInsets.only(top: 2, bottom: 2),
                         child: Row(
                           children: [

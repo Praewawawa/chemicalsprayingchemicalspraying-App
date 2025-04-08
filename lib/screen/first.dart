@@ -61,13 +61,18 @@ class FirstPage extends StatelessWidget {
                 Column(
                   children: [
                     
-                    const SizedBox(height: 12),
-                    AppButton(title: "เข้าสู่ระบบ", onPressed: () {
+                    const SizedBox(height: 12), 
+                    AppButton(title: "เข้าสู่ระบบ",
+                        width: 160,
+                        height: 60,
+                      onPressed: () {
                       context.router.push(const LoginRoute());
                       print("เข้าสู่ระบบ");
                     }),
                     const SizedBox(height: 12),
-                    AppButton(title: "สมัครสมาชิก", type: ButtonType.outlined, onPressed: () {
+                    AppButton(title: "สมัครสมาชิก",
+                        width: 160,
+                        height: 60,type: ButtonType.outlined, onPressed: () {
                       context.router.push(const CreateAccountRoute());
                       print("สมัครสมาชิก");
                     }),

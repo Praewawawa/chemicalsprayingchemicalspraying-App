@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:chemicalspraying/components/app_button.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/components/cardInfo.dart';
+import 'package:chemicalspraying/constants/colors.dart';
 
 @RoutePage( name: 'CreateAccountRoute')
 class CreateAccountPage extends StatelessWidget {
@@ -158,7 +159,7 @@ Widget build(BuildContext context) {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(Icons.check_circle,
-                              color: Colors.green, size: 60),
+                              color: mainColor, size: 40),
                           const SizedBox(height: 16),
                           const Text(
                             'สมัครสมาชิกสำเร็จ!',
@@ -174,7 +175,7 @@ Widget build(BuildContext context) {
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.grey[300],
-                                  minimumSize: const Size(129, 42),
+                                  minimumSize: const Size(115, 42),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8.42),
                                   ),
@@ -188,8 +189,8 @@ Widget build(BuildContext context) {
                                   context.router.replaceNamed('/otplogin');
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  minimumSize: const Size(129, 42),
+                                  backgroundColor: mainColor,
+                                  minimumSize: const Size(115, 42),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8.42),
                                   ),

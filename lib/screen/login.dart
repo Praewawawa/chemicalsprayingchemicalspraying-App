@@ -3,244 +3,144 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:chemicalspraying/router/routes.gr.dart'; // เปลี่ยน your_app_name ให้ตรงกับชื่อโปรเจกต์
 import 'package:chemicalspraying/components/app_button.dart';
+import 'package:chemicalspraying/constants/colors.dart'; // เปลี่ยนให้ตรงกับที่เก็บสีในโปรเจกต์ของคุณ
 
 
 @RoutePage()
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
+@override
+Widget build(BuildContext context) {
+  // ✅ ประกาศ Controller ไว้ด้านบน
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  @override
-  Widget build(BuildContext context) {
-    var _emailController;
-    var _passwordController;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
+  return Scaffold(
+    backgroundColor: Colors.white,
+    body: Center( // ✅ จัดกลางทั้งแนวตั้งแนวนอน
+      child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Form(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center, // ตรงกลางแนวนอน
+              mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                SizedBox(
-                  height: 75,
-                ),
-                Container(
-                  child: Text(
-                    "ลงชื่อเข้าใช้",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color.fromRGBO(71, 192, 61, 1),
-                        fontSize: 30),
+                const SizedBox(height: 75),
+                Text(
+                  "ลงชื่อเข้าใช้",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: mainColor,
+                    fontSize: 30,
                   ),
                 ),
-                SizedBox(
-                  height: 26,
-                ),
-                Container(
-                  child: Text(
-                    '\t\t\t\t'"ยินดีตอนรับสู่\nสวนไม้ผลอัจฉริยะ!",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        fontSize: 20),
+                const SizedBox(height: 26),
+                const Text(
+                  'ยินดีต้อนรับสู่\nสวนไม้ผลอัจฉริยะ!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: blackColor,
+                    fontSize: 20,
                   ),
                 ),
+
+                const SizedBox(height: 30),
+
+                // ✅ Email Field
                 SizedBox(
-                  height: 58,
-                ),
-                // Email Field
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'อีเมล',
-                    labelStyle: const TextStyle(color: Colors.green),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.green),
-                      borderRadius: BorderRadius.circular(12.0),
+                  width: 362,
+                  height: 70,
+                  child: TextField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: 'อีเมล',
+                      labelStyle: const TextStyle(color: mainColor, fontSize: 16),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor),
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor, width: 2),
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.green, width: 2),
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
+
                 const SizedBox(height: 16),
 
-                // Password Field
-                TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: 'รหัสผ่าน',
-                    suffixText: 'ลืมรหัสผ่าน',
-                    suffixStyle: const TextStyle(color: Colors.grey),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
+                // ✅ Password Field
+                SizedBox(
+                  width: 362,
+                  height: 70,
+                  child: TextField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      hintText: 'รหัสผ่าน',
+                      suffixText: 'ลืมรหัสผ่าน',
+                      suffixStyle: const TextStyle(color: Colors.grey),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
                     ),
+                    style: const TextStyle(fontSize: 16),
                   ),
                 ),
+
                 const SizedBox(height: 30),
-                /*TextFormField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'อีเมล',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20.0),
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: InputDecoration(
-                    labelText: 'รหัสผ่าน',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  obscureText: true,
-                ),
-                SizedBox(
-                  height: 9,
-                ),*/
 
+                // ✅ Forgot Password
                 TextButton(
-                      onPressed: () {
-                        context.router.push(const ForgotPasswordRoute());
-                      },
-                      child: Text(
-                        "ลืมรหัสผ่าน?",
-                        style: TextStyle(
-                          color: Color.fromRGBO(121, 118, 118, 1), fontSize: 14),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    AppButton(title: "เข้าสู่ระบบ",
-                        width: 357,
-                        height: 65,
-                      onPressed: () {
-                      context.router.replaceNamed('/addprofile');
-                      print("เข้าสู่ระบบ");
-                    }),
-                    const SizedBox(height: 12),
-                    AppButton(title: "สมัครสมาชิก",
-                        width: 357,
-                        height: 65,
-                    type: ButtonType.outlined, onPressed: () {
-                      context.router.replaceNamed('/createaccount');
-                      print("สมัครสมาชิก");
-                    }),
-                    // Login Button
-                
-                /*SizedBox(
-                  height: 109,
-                ),
-                Container(
-                  height: 65,
-                  width: 357,
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(
-                            Color.fromRGBO(71, 192, 61, 1))),
-                    onPressed: () {
-                      context.router.replaceNamed('/addprofile');
-                    },
-                    child: Text(
-                      "เข้าสู่ระบบ",
-                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                  onPressed: () {
+                    context.router.push(const ForgotPasswordRoute());
+                  },
+                  child: const Text(
+                    "ลืมรหัสผ่าน?",
+                    style: TextStyle(
+                      color: Color.fromRGBO(121, 118, 118, 1),
+                      fontSize: 14,
                     ),
                   ),
                 ),
-                SizedBox(
-                  height: 20,
-                ),
-                Container(
-                  height: 55,
-                  width: 357,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Color.fromRGBO(71, 192, 61, 1),
-                      width: 2.5,
-                    ),
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: Material(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.0),
-                    child: InkWell(
-                      onTap: () {
-                        context.router.replaceNamed('/createaccount');
-                      },
-                      borderRadius: BorderRadius.circular(12.0),
-                      child: Center(
-                        child: Text(
-                          'สมัครสมาชิก',
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),*/
 
-                /*SizedBox(
-                  height: 109,
-                ),
-                Container(
+                const SizedBox(height: 12),
+
+                // ✅ ปุ่มเข้าสู่ระบบ
+                AppButton(
+                  title: "เข้าสู่ระบบ",
+                  width: 357,
                   height: 65,
+                  onPressed: () {
+                    context.router.replaceNamed('/addprofile');
+                    print("เข้าสู่ระบบ");
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
+                // ✅ ปุ่มสมัครสมาชิก
+                AppButton(
+                  title: "สมัครสมาชิก",
                   width: 357,
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(
-                            Color.fromRGBO(71, 192, 61, 1))),
-                            
-                    onPressed: () {
-                      context.router.replaceNamed('/addprofile');
-                    },
-                    child: Text(
-                      "เข้าสู่ระบบ",
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                    ),
-                  ),
+                  height: 65,
+                  type: ButtonType.outlined,
+                  onPressed: () {
+                    context.router.replaceNamed('/createaccount');
+                    print("สมัครสมาชิก");
+                  },
                 ),
-                SizedBox(
-                  height: 30,
-                ),
-                Container(
-                  height: 41,
-                  width: 357,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Color.fromRGBO(71, 192, 61, 1), // สีกรอบ
-                      width: 2.5, // ความหนาของกรอบ
-                    ),
-                    borderRadius: BorderRadius.circular(10.0), // มุมโค้งมน
-                  ),
-                  child: Material(
-                    color: Colors.white, // สีปุ่ม
-                    child: InkWell(
-                      onTap: () {
-                        context.router.replaceNamed('/createaccount');
-                      },
-                      child: Center(
-                        child: Text('สร้างบัญชี',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 14)),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 194,
-                ),*/
-                /*TextButton(
-                  onPressed: () {},
-                  child: Text('Don\'t have an Account? ' 'Sign up',
-                      style: TextStyle(color: Colors.black, fontSize: 14)),
-                ),*/
               ],
             ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

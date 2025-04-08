@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
+import 'package:chemicalspraying/constants/colors.dart'; // เปลี่ยนให้ตรงกับที่เก็บสีในโปรเจกต์ของคุณ
 
 
 @RoutePage(name: 'ProfileRoute')
@@ -49,8 +50,8 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           const SizedBox(height: 20),
           CircleAvatar(
-            radius: 50,
-            backgroundImage: AssetImage('lip/assets/image/image.jpg'),
+            radius: 70,
+            backgroundImage: AssetImage('lib/assets/image/image.jpg'),
           ),
           const SizedBox(height: 10),
           const Text(
@@ -68,13 +69,17 @@ class _ProfilePageState extends State<ProfilePage> {
             height: 45,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: mainColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
               onPressed: () => context.router.replaceNamed('/editprofile'),
-              child: const Text('แก้ไข'),
+              child: const Text(
+                      'แก้ไข',
+                      style: TextStyle(color: Colors.white), 
+                    ),
+
             ),
           ),
           const SizedBox(height: 30),
@@ -86,13 +91,17 @@ class _ProfilePageState extends State<ProfilePage> {
               height: 45,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
+                  backgroundColor: redColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 onPressed: () => context.router.replaceNamed('/login'),
-                child: const Text('ออกจากระบบ'),
+                child: const Text(
+                        'ออกจากระบบ',
+                        style: TextStyle(color: Colors.white), 
+                      ),
+
               ),
             ),
           ),
@@ -121,7 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
           // Profile Image
           CircleAvatar(
             radius: 50,
-            backgroundImage: AssetImage('lip/assets/image/image.jpg'), // เปลี่ยนเป็นรูปของคุณ
+            backgroundImage: AssetImage('lib/assets/image/image.jpg'), // เปลี่ยนเป็นรูปของคุณ
           ),
           const SizedBox(height: 10),
           // Name
@@ -138,11 +147,11 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 20),
           // Edit Button
           SizedBox(
-            width: 200,
-            height: 45,
+            width: 349,
+            height: 42,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: mainColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -153,6 +162,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: const Text('แก้ไข'),
             ),
           ),
+
           const SizedBox(height: 30),
           const Divider(),
 
@@ -160,19 +170,19 @@ class _ProfilePageState extends State<ProfilePage> {
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: SizedBox(
-              width: double.infinity,
-              height: 45,
+              width: 364,
+              height: 53,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
+                  backgroundColor: redColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 onPressed: () {
-                  context.router.replaceNamed('/login');// ใส่ event ออกจากระบบ
+                  context.router.replaceNamed('/login'); // ✅ Event ออกจากระบบ
                 },
-                child: const Text('ออกจากระบบ'),
+                child: const Text('ออกจากระบบ', style: TextStyle(fontSize: 16, color: Colors.white)),
               ),
             ),
           ),

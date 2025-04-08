@@ -5,6 +5,7 @@ import 'bottom_screens/control_screen.dart';
 import 'bottom_screens/setting_screen.dart';
 import 'bottom_screens/notification_screen.dart';
 import 'bottom_screens/profile_screen.dart';
+import 'package:chemicalspraying/constants/colors.dart';
 
 class MainHomeScreen extends StatefulWidget {
   @override
@@ -39,8 +40,8 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
         showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: mainColor,
+        unselectedItemColor: greyColor,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),

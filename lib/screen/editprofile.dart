@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:chemicalspraying/router/routes.gr.dart'; // ✅ แก้ให้ถูก
 import 'package:auto_route/annotations.dart';
 import 'package:chemicalspraying/router/routes.dart'; // ✅ แก้ให้ถูก
+import 'package:chemicalspraying/constants/colors.dart'; // ✅ แก้ให้ถูก
 
 
 
@@ -37,7 +38,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           },
           child: const Text(
             'ยกเลิก',
-            style: TextStyle(color: Colors.red),
+            style: TextStyle(color: redColor),
           ),
         ),
       ),
@@ -51,7 +52,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               children: [
                 const CircleAvatar(
                   radius: 60,
-                  backgroundImage: AssetImage('lip/assets/images/profile.jpg'),
+                  backgroundImage: AssetImage('lib/assets/images/profile.jpg'),
                 ),
                 CircleAvatar(
                   radius: 16,
@@ -66,13 +67,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
               controller: nameController,
               decoration: InputDecoration(
                 labelText: 'ชื่อ-นามสกุล',
-                labelStyle: const TextStyle(color: Colors.green),
+                labelStyle: const TextStyle(color: mainColor),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.green),
+                  borderSide: const BorderSide(color: mainColor),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.green),
+                  borderSide: const BorderSide(color: mainColor),
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
@@ -164,36 +165,59 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.person, color: Colors.green, size: 60),
+                          const Icon(Icons.person, color: mainColor, size: 60),
                           const SizedBox(height: 16),
                           const Text(
                             'ยืนยันการแก้ไข\nข้อมูลโปรไฟล์',
                             textAlign: TextAlign.center,
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(
+                            height: 16),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: TextButton.icon(
-                                  onPressed: () {
-                                    Navigator.pop(context); // ปิด Dialog
-                                    context.router.replace(const ProfileRoute()); // ไปหน้า Profile
-                                  },
-                                  icon: const Icon(Icons.close, color: Colors.red),
-                                  label: const Text(
-                                    'ยกเลิก',
-                                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  Navigator.pop(context); // ปิด Dialog
+                                  context.router.replace(const ProfileRoute()); // ไปหน้า Profile
+                                },
+                                icon: const Icon(Icons.close, color: mainColor), // ✅ ไอคอนสีเขียว
+                                label: const Text(
+                                  'ยกเลิก',
+                                  style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold), // ✅ ตัวหนังสือสีเขียว
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Colors.green), // ✅ ขอบเขียว
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
                               ),
-                              ElevatedButton(
+                            ),
+
+                             Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: ElevatedButton(
                                 onPressed: () => Navigator.pop(context, true),
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                                child: const Text('ยืนยัน'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: mainColor, // ✅ สีเขียว
+                                  minimumSize: const Size(120, 40), // ✅ ขนาดปุ่มเหมือนกับ OutlinedButton
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8), // ✅ ขอบโค้งเหมือนกัน
+                                  ),
+                                ),
+                                child: const Text(
+                                  'ยืนยัน',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
+                            ),
                             ],
                           ),
                         ],
@@ -211,7 +235,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         content: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: const [
-                            Icon(Icons.check_circle, color: Colors.green, size: 60),
+                            Icon(Icons.check_circle, color: mainColor, size: 60),
                             SizedBox(height: 16),
                             Text(
                               'บันทึกข้อมูลสำเร็จ',
@@ -228,7 +252,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 },
                 child: const Text(
                   'บันทึก',
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(color: Colors.white,fontSize: 16),
                 ),
               ),
             ),

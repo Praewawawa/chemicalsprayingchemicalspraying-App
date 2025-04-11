@@ -35,11 +35,9 @@ abstract class $AppRouter extends _i19.RootStackRouter {
   @override
   final Map<String, _i19.PageFactory> pagesMap = {
     AddprofileRoute.name: (routeData) {
-      final args = routeData.argsAs<AddprofileRouteArgs>(
-          orElse: () => const AddprofileRouteArgs());
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: _i1.AddprofilePage(key: args.key),
+        child: const _i1.AddprofilePage(),
       );
     },
     ControlRoute.name: (routeData) {
@@ -151,31 +149,16 @@ abstract class $AppRouter extends _i19.RootStackRouter {
 
 /// generated route for
 /// [_i1.AddprofilePage]
-class AddprofileRoute extends _i19.PageRouteInfo<AddprofileRouteArgs> {
-  AddprofileRoute({
-    _i20.Key? key,
-    List<_i19.PageRouteInfo>? children,
-  }) : super(
+class AddprofileRoute extends _i19.PageRouteInfo<void> {
+  const AddprofileRoute({List<_i19.PageRouteInfo>? children})
+      : super(
           AddprofileRoute.name,
-          args: AddprofileRouteArgs(key: key),
           initialChildren: children,
         );
 
   static const String name = 'AddprofileRoute';
 
-  static const _i19.PageInfo<AddprofileRouteArgs> page =
-      _i19.PageInfo<AddprofileRouteArgs>(name);
-}
-
-class AddprofileRouteArgs {
-  const AddprofileRouteArgs({this.key});
-
-  final _i20.Key? key;
-
-  @override
-  String toString() {
-    return 'AddprofileRouteArgs{key: $key}';
-  }
+  static const _i19.PageInfo<void> page = _i19.PageInfo<void>(name);
 }
 
 /// generated route for

@@ -4,6 +4,8 @@ import 'package:chemicalspraying/router/routes.gr.dart';
 
 
 
+
+
 @AutoRouterConfig()
 class AppRouter extends $AppRouter {
   @override
@@ -27,6 +29,11 @@ class AppRouter extends $AppRouter {
         /*AutoRoute(path: '/control', page: ControlScreen.page),*/
         /*AutoRoute(path: '/controlwaypoin', page: ControlwaypoinPage.page),*/
         AutoRoute(path: '/controlwaypoint', page: ControlwaypointRoute.page),
+        
+        
+
+
+
 
 
 

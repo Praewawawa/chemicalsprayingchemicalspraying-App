@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import '../router/routes.gr.dart';
 import 'package:chemicalspraying/router/routes.gr.dart'; // ✅ แก้ให้ถูก
+import 'package:chemicalspraying/constants/colors.dart'; // ✅ แก้ให้ถูก
 
 @RoutePage(name: 'NotificationRoute')
 class NotificationPage extends StatefulWidget {
@@ -100,17 +101,34 @@ class _NotificationPageState extends State<NotificationPage> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
+        selectedItemColor: mainColor,         // ✅ สีไอคอนที่ถูกเลือก
+        unselectedItemColor: grayColor,       // ✅ สีไอคอนที่ไม่ถูกเลือก
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "หน้าหลัก"),
-          BottomNavigationBarItem(icon: Icon(Icons.control_camera_outlined), label: "ควบคุม"),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined), label: "แจ้งเตือน"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: "ตั้งค่า"),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "โปรไฟล์"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'หน้าหลัก',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.sensors),
+            label: 'ควบคุม',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings_outlined),
+            label: 'ตั้งค่า',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications_outlined),
+            label: 'แจ้งเตือน',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'โปรไฟล์',
+          ),
         ],
       ),
     );

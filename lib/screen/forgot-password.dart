@@ -11,14 +11,6 @@ class ForgotPassword extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
@@ -47,31 +39,37 @@ class ForgotPassword extends StatelessWidget {
                 contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               ),
             ),
-            SizedBox(height: 10),
-            TextButton(
-              onPressed: () {
-                context.router.push(const LoginRoute());
-              },
-              child: Text(
-                'กลับไปยังหน้า ลงชื่อเข้าใช้',
-                style: TextStyle(color: Colors.green, fontSize: 14),
-              ),
-            ),
+
 
             const SizedBox(height: 12),
                     AppButton(title: "ยืนยัน", onPressed: () {
                       context.router.push(const OTPVerificationRoute());
                       print("ยืนยัน");
                     }),
-            SizedBox(height: 20),
-              TextButton(
-              onPressed: () {
-                context.router.push(const LoginRoute());
-              },
-              child: const Text(
-                'คุณมีบัญชีอยู่แล้วหรือไม่ ? ลงชื่อเข้าใช้',
-                style: TextStyle(color: Colors.green, fontSize: 14),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'คุณมีบัญชีอยู่แล้วหรือไม่ ?, ',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    context.router.push(const LoginRoute());
+                  },
+                  child: const Text(
+                    'ลงชื่อเข้าใช้',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

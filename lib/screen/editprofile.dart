@@ -29,19 +29,26 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FBFF),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text(
-            'ยกเลิก',
-            style: TextStyle(color: redColor),
-          ),
-        ),
+ appBar: AppBar(
+  backgroundColor: Colors.transparent,
+  elevation: 0,
+  leading: TextButton(
+    onPressed: () {
+      context.router.pushNamed('/editprofile'); // ✅ หรือ .push(EditProfileRoute()) ถ้าใช้ AutoRoute
+    },
+    child: const Text(
+      'ยกเลิก',
+      style: TextStyle(
+        color: redColor,
+        fontWeight: FontWeight.bold,
+        fontSize: 16,
       ),
+    ),
+  ),
+),
+      // AppBar
+      // Body
+      // ✅ ใช้ SingleChildScrollView เพื่อให้ Scroll ได้
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -198,7 +205,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               ),
                             ),
 
-                             Padding(
+                          Padding(
                               padding: const EdgeInsets.only(left: 8),
                               child: ElevatedButton(
                                 onPressed: () => Navigator.pop(context, true),
@@ -259,6 +266,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ],
         ),
       ),
-    );
+    );  
   }
 }
+

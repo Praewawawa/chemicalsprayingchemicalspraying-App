@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:auto_route/auto_route.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
+import 'package:chemicalspraying/constants/colors.dart'; // <-- เปลี่ยนให้ตรงกับที่เก็บสีในโปรเจกต์ของคุณ
 
 @RoutePage(name: 'ControlwaypointRoute')
 class ControlwaypoinPage extends StatefulWidget {
@@ -63,10 +64,6 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF0FAFF),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {},
-        ),
         actions: [
         Switch(
           value: true,
@@ -161,26 +158,52 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
           // --------- Control Buttons ---------
           Row(
             children: [
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                  onPressed: _sendToRaspberryPi, // <-- ส่งข้อมูล
-                  child: const Text("เริ่ม"),
+          const SizedBox(width: 8),
+          Expanded(           
+            child: ElevatedButton(
+              onPressed: _sendToRaspberryPi,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: mainColor,
+                minimumSize: const Size(60, 40),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                  onPressed: () {
-                    setState(() => waypoints.clear()); // เคลียร์จุด
-                  },
-                  child: const Text("ยกเลิก"),
+              child: const Text(
+                'เริ่ม',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() => waypoints.clear());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey,
+                minimumSize: const Size(60, 40),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'ยกเลิก',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
             ],
           ),
-          const SizedBox(height: 8),
         ],
       ),
     );

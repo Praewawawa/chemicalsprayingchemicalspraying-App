@@ -12,14 +12,6 @@ class OTPLoginPage  extends StatelessWidget {
   @override
 Widget build(BuildContext context) {
   return Scaffold(
-    appBar: AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
-    ),
     body: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Column(
@@ -62,15 +54,32 @@ Widget build(BuildContext context) {
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          TextButton(
-            onPressed: () {
-              // TODO: เพิ่มฟังก์ชันส่งรหัสอีกครั้ง
-            },
-            child: const Text(
-              'หากคุณไม่ได้รับรหัส, กดส่งอีกครั้ง',
-              style: TextStyle(color: mainColor, fontSize: 14),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'หากคุณไม่ได้รับรหัส, ',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  // TODO: ใส่ logic ส่ง OTP ไปยังอีเมลที่นี่
+                  print("ส่งรหัส OTP อีกครั้งไปยังอีเมล");
+                  // คุณสามารถใช้ฟังก์ชันเช่น sendOtpToEmail() ได้ที่นี่
+                },
+                child: const Text(
+                  'กดส่งอีกครั้ง',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
           ),
 
           const SizedBox(height: 20),

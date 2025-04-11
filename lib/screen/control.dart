@@ -36,12 +36,6 @@ Widget build(BuildContext context) {
   return Scaffold(
     backgroundColor: const Color(0xFFF0FAFF),
     appBar: AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: () {},
-      ),
       actions: [
     Switch(
       value: false,

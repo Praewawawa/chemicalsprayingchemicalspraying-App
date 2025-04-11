@@ -33,11 +33,8 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
       return Scaffold(
+      backgroundColor: const Color(0xFFF0FAFF),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.router.pop(),
-        ),
         title: const Text(
           'โปรไฟล์',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),

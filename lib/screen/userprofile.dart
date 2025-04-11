@@ -12,12 +12,6 @@ class UserProfilePage extends StatelessWidget { // เปลี่ยนชื�
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            context.router.replaceNamed('/home');
-          },
-        ),
         title: Text('Profile'),
       ),
       body: Center(

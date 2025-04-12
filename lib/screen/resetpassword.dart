@@ -32,19 +32,24 @@ class ResetPassword extends StatelessWidget {
               TextField(
                 controller: passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  hintText: 'อย่างน้อย 8 หลัก',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                hintText: 'อย่างน้อย 8 หลัก',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0), // ✅ OK ไม่ใช้ const
                 ),
+              ),
+
               ),
               const SizedBox(height: 20),
               const Text('ยืนยันรหัสผ่าน', style: TextStyle(fontSize: 16)),
               TextField(
                 controller: confirmPasswordController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration:  InputDecoration(
                   hintText: '********',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),

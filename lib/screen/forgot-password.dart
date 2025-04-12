@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/components/app_button.dart';
+import 'package:chemicalspraying/constants/colors.dart';
 
 @RoutePage(name: 'ForgotPasswordRoute')
 class ForgotPassword extends StatelessWidget {
@@ -35,7 +36,7 @@ class ForgotPassword extends StatelessWidget {
                 hintText: 'example@gmail.com',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(color: Colors.grey),
+                  borderSide: BorderSide(color: mainColor),
                 ),
                 contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               ),

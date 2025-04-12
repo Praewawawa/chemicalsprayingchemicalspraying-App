@@ -25,8 +25,8 @@ Widget build(BuildContext context) {
             child: Opacity(
               opacity: 0.3,
               child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.50, // ✅ สูงแค่ 25% ของจอ
-                width: MediaQuery.of(context).size.width * 1.0,    // ✅ กว้างแค่ 50% ของจอ
+                height: MediaQuery.of(context).size.height * 0.30, // ✅ สูงแค่ 25% ของจอ
+                width: MediaQuery.of(context).size.width * 0.7,    // ✅ กว้างแค่ 50% ของจอ
                 child: Image.asset(
                   'lib/assets/image/16.png',
                   fit: BoxFit.cover,

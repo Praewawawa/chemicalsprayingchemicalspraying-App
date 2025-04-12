@@ -12,6 +12,7 @@ class FirstPage extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF0FAFF),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(

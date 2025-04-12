@@ -35,7 +35,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   @override
 Widget build(BuildContext context) {
   return Scaffold(
-    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+    backgroundColor: const Color(0xFFF0FAFF),
     body: Center(
       child: SingleChildScrollView(
         child: Padding(

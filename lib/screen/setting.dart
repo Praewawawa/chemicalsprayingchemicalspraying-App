@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import '../router/routes.gr.dart';
 import '../constants/colors.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:chemicalspraying/constants/colors.dart';
 
 @RoutePage(name: 'NotificationSettingRoute')
 class NotificationSettingPage extends StatefulWidget {
@@ -14,9 +16,9 @@ class NotificationSettingPage extends StatefulWidget {
 class _NotificationSettingPageState extends State<NotificationSettingPage> {
   int _selectedIndex = 1; // index ของหน้า ตั้งค่า
   bool speedAlert = true;
-  bool batteryAlert = true;
+  bool batteryAlert = false;
   bool chemicalAlert = true;
-  bool routeAlert = true;
+  bool routeAlert = false;
 
   final List<PageRouteInfo> _routes = [
       AddprofileRoute(),               // 0 -> Home
@@ -35,18 +37,52 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
     context.router.replace(_routes[index]);
   }
 
+Widget buildSwitchTile({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+          title: Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(
+            subtitle,
+            style: const TextStyle(color: Colors.grey),
+          ),
+          trailing: CupertinoSwitch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: mainColor,
+            thumbColor: Colors.white,
+            trackColor: Colors.black12,
+          ),
+        ),
+        const Divider(thickness: 1),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ตั้งค่าการแจ้งเตือน',
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-            )),
+        title: const Text(
+          'ตั้งค่าการแจ้งเตือน',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       backgroundColor: const Color(0xFFF5FAFF),
       body: Padding(
@@ -55,25 +91,25 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
           children: [
             buildSwitchTile(
               title: "ข้อความแจ้งเตือนความเร็วลม",
-              subtitle: "ข้อความแจ้งเตือนเมื่อความเร็วลมเกินกำหนด",
+              subtitle: "แจ้งเตือนเมื่อความเร็วลมเกินกำหนด",
               value: speedAlert,
               onChanged: (value) => setState(() => speedAlert = value),
             ),
             buildSwitchTile(
               title: "ข้อความแจ้งเตือนปริมาณแบตเตอรี่",
-              subtitle: "ข้อความแจ้งเตือนเมื่อปริมาณแบตเตอรี่ต่ำกว่ากำหนด",
+              subtitle: "แจ้งเตือนเมื่อแบตเตอรี่ต่ำ",
               value: batteryAlert,
               onChanged: (value) => setState(() => batteryAlert = value),
             ),
             buildSwitchTile(
               title: "ข้อความแจ้งเตือนปริมาณสารเคมี",
-              subtitle: "ข้อความแจ้งเตือนเมื่อปริมาณสารเคมีต่ำกว่ากำหนด",
+              subtitle: "แจ้งเตือนเมื่อปริมาณสารเคมีต่ำ",
               value: chemicalAlert,
               onChanged: (value) => setState(() => chemicalAlert = value),
             ),
             buildSwitchTile(
               title: "ข้อความแจ้งเตือนเส้นทางการเดินรถ",
-              subtitle: "ข้อความแจ้งเตือนเมื่อรถออกนอกเส้นทาง",
+              subtitle: "แจ้งเตือนเมื่อรถออกนอกเส้นทาง",
               value: routeAlert,
               onChanged: (value) => setState(() => routeAlert = value),
             ),
@@ -84,8 +120,8 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
         showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: mainColor,         // ✅ สีไอคอนที่ถูกเลือก
-        unselectedItemColor: grayColor,       // ✅ สีไอคอนที่ไม่ถูกเลือก
+        selectedItemColor: mainColor,
+        unselectedItemColor: grayColor,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         items: const [
@@ -110,26 +146,6 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
             label: 'โปรไฟล์',
           ),
         ],
-      ),
-    );
-  }
-
-  Widget buildSwitchTile({
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: SwitchListTile(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle),
-        value: value,
-        onChanged: onChanged,
-        activeColor: Colors.green,
       ),
     );
   }

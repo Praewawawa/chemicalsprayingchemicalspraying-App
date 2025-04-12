@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import 'package:chemicalspraying/screen/addprofile.dart';
 import 'package:chemicalspraying/screen/control.dart';
 import 'package:chemicalspraying/screen/nottification.dart';
@@ -75,7 +75,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> { // ✅ ย้าย�
       ),
     );
   }
-}
+}*/
 
 /*import 'package:flutter/material.dart';
 import 'package:chemicalspraying/screen/addprofile.dart';

@@ -17,8 +17,26 @@ Widget build(BuildContext context) {
   final TextEditingController _passwordController = TextEditingController();
 
   return Scaffold(
-    backgroundColor: Colors.white,
-    body: Center( // ✅ จัดกลางทั้งแนวตั้งแนวนอน
+ body: Stack( // ใช้ Stack สำหรับซ้อน background + เนื้อหา
+    children: [
+        Align(
+          alignment: Alignment.bottomLeft,
+          child: ClipRect(
+            child: Opacity(
+              opacity: 0.3,
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.50, // ✅ สูงแค่ 25% ของจอ
+                width: MediaQuery.of(context).size.width * 1.0,    // ✅ กว้างแค่ 50% ของจอ
+                child: Image.asset(
+                  'lib/assets/image/16.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+        ),
+
+    Center( // ✅ จัดกลางทั้งแนวตั้งแนวนอน
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -142,6 +160,8 @@ Widget build(BuildContext context) {
         ),
       ),
     ),
+    ],
+  ),
   );
 }
 }

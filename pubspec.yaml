@@ -50,7 +50,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+  mqtt_client: ^10.0.0
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -78,6 +78,8 @@ flutter:
   assets:
     - lib/assets/image/image.png
     - lib/assets/image/16.png
+    - lib/assets/image/8.png
+    - lib/assets/image/15.png
 
 
 

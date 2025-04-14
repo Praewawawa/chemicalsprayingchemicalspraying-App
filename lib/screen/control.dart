@@ -1,11 +1,13 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mqtt_client/mqtt_client.dart';
+import 'package:mqtt_client/mqtt_server_client.dart';
 import '../router/routes.gr.dart';
-import 'package:chemicalspraying/router/routes.gr.dart';
-import 'package:chemicalspraying/constants/colors.dart'; // เปลี่ยนให้ตรงกับที่เก็บสีในโปรเจกต์ของคุณ
+import 'package:chemicalspraying/constants/colors.dart';
 
-@RoutePage(name: 'ControlRoute') // ตั้งชื่อ route ได้ตามใจ
-class ControlScreen extends StatefulWidget { // ← ชื่อ Widget จริง ต้องไม่ใช้ชื่อ route
+@RoutePage(name: 'ControlRoute')
+class ControlScreen extends StatefulWidget {
   const ControlScreen({super.key});
 
   @override
@@ -14,15 +16,49 @@ class ControlScreen extends StatefulWidget { // ← ชื่อ Widget จร�
 
 class _ControlScreenState extends State<ControlScreen> {
   int _selectedIndex = 1;
+  bool isCustomMode = false;
+  late MqttServerClient client;
 
   final List<PageRouteInfo> _routes = [
-    AddprofileRoute(),               // 0 -> Home
-    ControlRoute(),                  // 1 -> Control
-    NotificationRoute(),             // 2 -> Notification (แจ้งเตือน)
-    NotificationSettingRoute(),      // 3 -> Setting (ตั้งค่า)
-    ProfileRoute(),                  // 4 -> Profile
+    AddprofileRoute(),
+    ControlRoute(),
+    NotificationRoute(),
+    NotificationSettingRoute(),
+    ProfileRoute(),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _connectMQTT(); // ✅ เพิ่มการเชื่อมต่อ MQTT
+  }
+
+  Future<void> _connectMQTT() async {
+    client = MqttServerClient('test.mosquitto.org', 'flutter_client'); // ✅ ใช้ MQTT server
+    client.port = 1883;
+    client.logging(on: false);
+    client.keepAlivePeriod = 20;
+    client.onConnected = () => print('MQTT Connected');
+    client.onDisconnected = () => print('MQTT Disconnected');
+    client.onSubscribed = (topic) => print('Subscribed to \$topic');
+
+    try {
+      await client.connect();
+    } catch (e) {
+      print('MQTT connection failed: \$e');
+      client.disconnect();
+    }
+  }
+
+  void sendControl(String direction) {
+    final builder = MqttClientPayloadBuilder(); // ✅ สร้าง payload
+    builder.addString(direction);
+    client.publishMessage('rc/control', MqttQos.atLeastOnce, builder.payload!);
+    print('Sent MQTT command: \$direction');
+  }
+
+  void sendArm() => sendControl("arm"); // ✅ ฟังก์ชัน ARM
+  void sendDisarm() => sendControl("disarm"); // ✅ ฟังก์ชัน DISARM
 
   void _onItemTapped(int index) {
     setState(() {
@@ -31,75 +67,93 @@ class _ControlScreenState extends State<ControlScreen> {
     context.router.replace(_routes[index]);
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: const Color(0xFFF0FAFF),
-    appBar: AppBar(
-      actions: [
-    Switch(
-      value: false,
-      onChanged: (value) {
-        if (value) {
-          context.router.replace(const ControlwaypointRoute());
-          // เปลี่ยนหน้าไปที่ ControlWaypointRoute
-        }
-      },
-      activeColor: Colors.green,
-    ),
-],
-    ),
-    body: Column(
-      children: [
-        SizedBox(height: 8),
-        // Control Pad
-        Center(
-          child: Column(
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF0FAFF),
+      appBar: AppBar(
+        title: const Text("RC Control Panel",
+            style: TextStyle(
+                color: Colors.black, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Row(
+              children: [
+                const SizedBox(width: 8),
+                CupertinoSwitch(
+                  value: isCustomMode,
+                  onChanged: (value) {
+                    setState(() => isCustomMode = value);
+                    if (value) {
+                      context.router.replace(const ControlwaypointRoute());
+                    }
+                  },
+                  activeColor: Colors.green,
+                  thumbColor: Colors.white,
+                  trackColor: Colors.black12,
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 16),
+
+          // ✅ ปุ่ม ARM / DISARM แบบกดได้
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.arrow_drop_up, size: 40),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.arrow_left, size: 40),
-                  Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey[400],
-                    ),
-                    child: Text("Auto"),
-                  ),
-                  Icon(Icons.arrow_right, size: 40),
-                ],
-              ),
-              Icon(Icons.arrow_drop_down, size: 40),
+              _actionButton("ARM", Colors.green, sendArm),
+              const SizedBox(width: 20),
+              _actionButton("DISARM", Colors.amber, sendDisarm),
             ],
           ),
-        ),
-        SizedBox(height: 20),
-        // Status
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _StatusCard(title: 'ความเร็วลม', value: '4.23 km/s'),
-            _StatusCard(title: 'แบตเตอรี่', value: '100%'),
-            _StatusCard(title: 'ปริมาณสารเคมี', value: '100%'),
-          ],
-        ),
-        SizedBox(height: 20),
-        // Timer
-        _TimerControl(),
-        SizedBox(height: 20),
-        // Speed
-        _SpeedControl(),
-      ],
-    ),
+
+          const SizedBox(height: 30),
+
+          // ✅ ปุ่มควบคุมทิศทางแบบ Table และมีระยะห่าง
+          Center(
+            child: Table(
+              defaultColumnWidth: FixedColumnWidth(70),
+              children: [
+                TableRow(
+                  children: [
+                    _padded(_directionButton(Icons.north_west, 'forward_left')),
+                    _padded(_directionButton(Icons.arrow_upward, 'forward')),
+                    _padded(_directionButton(Icons.north_east, 'forward_right')),
+                  ],
+                ),
+                TableRow(
+                  children: [
+                    _padded(_directionButton(Icons.arrow_back, 'left')),
+                    _padded(_stopButton()),
+                    _padded(_directionButton(Icons.arrow_forward, 'right')),
+                  ],
+                ),
+                TableRow(
+                  children: [
+                    _padded(_directionButton(Icons.south_west, 'backward_left')),
+                    _padded(_directionButton(Icons.arrow_downward, 'backward')),
+                    _padded(_directionButton(Icons.south_east, 'backward_right')),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: mainColor,         // ✅ สีไอคอนที่ถูกเลือก
-        unselectedItemColor: grayColor,       // ✅ สีไอคอนที่ไม่ถูกเลือก
+        selectedItemColor: mainColor,
+        unselectedItemColor: grayColor,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         items: const [
@@ -125,350 +179,66 @@ Widget build(BuildContext context) {
           ),
         ],
       ),
-  );
-}
-
-
-  Widget _buildControlPad() {
-    return SizedBox(
-      width: 200,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(top: 0, child: _controlButton(Icons.arrow_drop_up)),
-          Positioned(bottom: 0, child: _controlButton(Icons.arrow_drop_down)),
-          Positioned(left: 0, child: _controlButton(Icons.arrow_left)),
-          Positioned(right: 0, child: _controlButton(Icons.arrow_right)),
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.grey[200],
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.text_fields, color: Colors.grey),
-                Text('Auto', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 
-  Widget _controlButton(IconData icon) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[400],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.all(10),
-      child: Icon(icon, color: Colors.white),
+  Widget _padded(Widget child) {
+    return Padding(
+      padding: const EdgeInsets.all(5.0), // ✅ เพิ่มระยะห่าง
+      child: child,
     );
   }
-}
 
-class _StatusCard extends StatelessWidget {
-  final String title;
-  final String value;
-
-  const _StatusCard({required this.title, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 90,
-      height: 60,
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        children: [
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(title, style: const TextStyle(fontSize: 12)),
-        ],
-      ),
-    );
-  }
-}
-
-class _TimerControl extends StatelessWidget {
-  const _TimerControl();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Text("Timer", style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Switch(value: true, onChanged: (v) {}, activeColor: Colors.green),
-            const SizedBox(width: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text("00 : 01 : 0"),
-            ),
-          ],
+  Widget _directionButton(IconData icon, String command) {
+    return GestureDetector(
+      onTap: () => sendControl(command), // ✅ ส่งคำสั่ง MQTT เมื่อกด
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(12),
         ),
-      ],
-    );
-  }
-}
-
-class _SpeedControl extends StatelessWidget {
-  const _SpeedControl();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Text("Speed", style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Switch(value: true, onChanged: (v) {}, activeColor: Colors.green),
-            const SizedBox(width: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text("1"),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-/*import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import '../router/routes.gr.dart';
-import 'package:chemicalspraying/router/routes.gr.dart';
-
-@RoutePage(name: 'ControlRoute') // ตั้งชื่อ route ได้ตามใจ
-class ControlPage extends StatelessWidget {
-  const ControlPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("ควบคุม")),
-      body: const Center(child: Text("Control Page")),
-    );
-  }
-}
-
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    context.router.replace(_routes[index]);
-  }
-
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: const Color(0xFFF0FAFF),
-    appBar: AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: () {},
+        child: Icon(icon, size: 28, color: Colors.black87),
       ),
-      actions: [
-    Switch(
-      value: false,
-      onChanged: (value) {
-        if (value) {
-          context.router.replace(const ControlwaypointRoute());
-          // เปลี่ยนหน้าไปที่ ControlWaypointRoute
-        }
-      },
-      activeColor: Colors.green,
-    ),
-],
-    ),
-    body: Column(
-      children: [
-        SizedBox(height: 8),
-        // Control Pad
-        Center(
-          child: Column(
-            children: [
-              Icon(Icons.arrow_drop_up, size: 40),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.arrow_left, size: 40),
-                  Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey[400],
-                    ),
-                    child: Text("Auto"),
-                  ),
-                  Icon(Icons.arrow_right, size: 40),
-                ],
-              ),
-              Icon(Icons.arrow_drop_down, size: 40),
-            ],
+    );
+  }
+
+  Widget _stopButton() {
+    return GestureDetector(
+      onTap: () => sendControl("stop"), // ✅ ส่ง stop command
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: Colors.redAccent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: Text(
+            'STOP',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
-        SizedBox(height: 20),
-        // Status
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _StatusCard(title: 'ความเร็วลม', value: '4.23 km/s'),
-            _StatusCard(title: 'แบตเตอรี่', value: '100%'),
-            _StatusCard(title: 'ปริมาณสารเคมี', value: '100%'),
-          ],
+      ),
+    );
+  }
+
+  Widget _actionButton(String label, Color color, void Function() onPressed) {
+    return ElevatedButton(
+      onPressed: onPressed, // ✅ ส่งคำสั่ง arm / disarm
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        minimumSize: const Size(120, 50),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
-        SizedBox(height: 20),
-        // Timer
-        _TimerControl(),
-        SizedBox(height: 20),
-        // Speed
-        _SpeedControl(),
-      ],
-    ),
-  );
-}
-
-
-  Widget _buildControlPad() {
-    return SizedBox(
-      width: 200,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(top: 0, child: _controlButton(Icons.arrow_drop_up)),
-          Positioned(bottom: 0, child: _controlButton(Icons.arrow_drop_down)),
-          Positioned(left: 0, child: _controlButton(Icons.arrow_left)),
-          Positioned(right: 0, child: _controlButton(Icons.arrow_right)),
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.grey[200],
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.text_fields, color: Colors.grey),
-                Text('Auto', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              ],
-            ),
-          ),
-        ],
       ),
-    );
-  }
-
-  Widget _controlButton(IconData icon) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[400],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.all(10),
-      child: Icon(icon, color: Colors.white),
-    );
-  }
-
-
-class _StatusCard extends StatelessWidget {
-  final String title;
-  final String value;
-
-  const _StatusCard({required this.title, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 90,
-      height: 60,
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        children: [
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(title, style: const TextStyle(fontSize: 12)),
-        ],
+      child: Text(
+        label,
+        style: const TextStyle(
+            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
       ),
     );
   }
 }
-
-class _TimerControl extends StatelessWidget {
-  const _TimerControl();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Text("Timer", style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Switch(value: true, onChanged: (v) {}, activeColor: Colors.green),
-            const SizedBox(width: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text("00 : 01 : 0"),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _SpeedControl extends StatelessWidget {
-  const _SpeedControl();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Text("Speed", style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Switch(value: true, onChanged: (v) {}, activeColor: Colors.green),
-            const SizedBox(width: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text("1"),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}*/

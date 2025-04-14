@@ -35,194 +35,248 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   @override
 Widget build(BuildContext context) {
   return Scaffold(
-    
-    backgroundColor: const Color(0xFFF0FAFF),
-    body: Center(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'สร้างบัญชีสมาชิก',
-                style: TextStyle(
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
-              SizedBox(height: 20),
-              TextField(
-                controller: _usernameController,
-                decoration: InputDecoration(
-                  labelText: 'ชื่อบัญชีผู้ใช้',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: SizedBox(
-                      height: 60,
-                      child: DropdownButtonFormField<String>(
-                        value: _selectedGender,
-                        onChanged: (newValue) {
-                          setState(() {
-                            _selectedGender = newValue!;
-                          });
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'เพศ',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        items: <String>[
-                          'เพศชาย',
-                          'เพศหญิง',
-                          'อื่นๆ',
-                        ].map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    flex: 2,
-                    child: SizedBox(
-                      height: 60,
-                      child: TextField(
-                        controller: _phoneController,
-                        decoration: InputDecoration(
-                          labelText: 'เบอร์โทรศัพท์',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'อีเมล',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: 'รหัสผ่าน',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-                obscureText: true,
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: _confirmPasswordController,
-                decoration: InputDecoration(
-                  labelText: 'ยืนยันรหัสผ่าน',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-                obscureText: true,
-              ),
-              SizedBox(height: 20),
-
-              /// ✅ ปุ่ม "สมัครสมาชิก"
-              AppButton(
-                title: "สมัครสมาชิก",
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.check_circle,
-                              color: mainColor, size: 40),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'สมัครสมาชิกสำเร็จ!',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[300],
-                                  minimumSize: const Size(115, 42),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.42),
-                                  ),
-                                ),
-                                child: const Text('ยกเลิก',
-                                    style: TextStyle(color: Colors.black)),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  context.router.replaceNamed('/otplogin');
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: mainColor,
-                                  minimumSize: const Size(115, 42),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.42),
-                                  ),
-                                ),
-                                child: const Text('ยืนยัน',
-                                    style: TextStyle(color: Colors.white)),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 12),
-
-              /// ✅ ปุ่ม "ฉันมีบัญชีอยู่แล้ว"
-              AppButton(
-                title: "ฉันมีบัญชีอยู่แล้ว",
-                type: ButtonType.outlined,
-                onPressed: () {
-                  context.router.replaceNamed('/login');
-                  print("ฉันมีบัญชีอยู่แล้ว");
-                },
-              ),
-            ],
+backgroundColor: const Color(0xFFF0FAFF),
+    body: Stack(
+      children: [
+        //  รูปมุมบนซ้าย
+      Positioned(
+      top: 0,
+      left: 0,
+      child: Opacity(
+        opacity: 0.3,
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.50,
+          width: MediaQuery.of(context).size.width * 0.7,
+          child: Image.asset(
+            'lib/assets/image/8.png',
+            fit: BoxFit.contain,
           ),
         ),
       ),
+    ),
+      
+
+        //  รูปมุมล่างซ้าย
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: ClipRect(
+            child: Opacity(
+              opacity: 0.3,
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.40,
+                width: MediaQuery.of(context).size.width * 1.0,
+                child: Image.asset(
+                  'lib/assets/image/15.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // ✅ ฟอร์ม
+        Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'สร้างบัญชีสมาชิก',
+                    style: TextStyle(
+                      fontSize: 24.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  TextField(
+                    controller: _usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'ชื่อบัญชีผู้ใช้',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // ✅ แถว เพศ + เบอร์โทร
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: SizedBox(
+                          height: 60,
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedGender,
+                            onChanged: (newValue) {
+                              setState(() {
+                                _selectedGender = newValue!;
+                              });
+                            },
+                            decoration: InputDecoration(
+                              labelText: 'เพศ',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                            items: ['เพศชาย', 'เพศหญิง', 'อื่นๆ']
+                                .map<DropdownMenuItem<String>>(
+                                    (String value) => DropdownMenuItem(
+                                          value: value,
+                                          child: Text(value),
+                                        ))
+                                .toList(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: SizedBox(
+                          height: 60,
+                          child: TextField(
+                            controller: _phoneController,
+                            decoration: InputDecoration(
+                              labelText: 'เบอร์โทรศัพท์',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  TextField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: 'อีเมล',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  TextField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'รหัสผ่าน',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    obscureText: true,
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  TextField(
+                    controller: _confirmPasswordController,
+                    decoration: InputDecoration(
+                      labelText: 'ยืนยันรหัสผ่าน',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    obscureText: true,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ✅ ปุ่มสมัครสมาชิก
+                  AppButton(
+                    title: "สมัครสมาชิก",
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle,
+                                  color: mainColor, size: 40),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'สมัครสมาชิกสำเร็จ!',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.grey[300],
+                                      minimumSize: const Size(115, 42),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8.42),
+                                      ),
+                                    ),
+                                    child: const Text('ยกเลิก',
+                                        style:
+                                            TextStyle(color: Colors.black)),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      context.router
+                                          .replaceNamed('/otplogin');
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: mainColor,
+                                      minimumSize: const Size(115, 42),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8.42),
+                                      ),
+                                    ),
+                                    child: const Text('ยืนยัน',
+                                        style:
+                                            TextStyle(color: Colors.white)),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  AppButton(
+                    title: "ฉันมีบัญชีอยู่แล้ว",
+                    type: ButtonType.outlined,
+                    onPressed: () {
+                      context.router.replaceNamed('/login');
+                      print("ฉันมีบัญชีอยู่แล้ว");
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     ),
   );
 }

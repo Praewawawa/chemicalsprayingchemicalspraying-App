@@ -6,6 +6,8 @@ import 'dart:convert';
 import 'package:auto_route/auto_route.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/constants/colors.dart'; // <-- เปลี่ยนให้ตรงกับที่เก็บสีในโปรเจกต์ของคุณ
+import 'package:flutter/cupertino.dart';
+
 
 @RoutePage(name: 'ControlwaypointRoute')
 class ControlwaypoinPage extends StatefulWidget {
@@ -64,148 +66,151 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF0FAFF),
       appBar: AppBar(
-        actions: [
-        Switch(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      toolbarHeight: 70, // เพิ่มความสูงสำหรับ ListTile
+      automaticallyImplyLeading: false,
+      title: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+        trailing: CupertinoSwitch(
           value: true,
           onChanged: (value) {
             if (!value) {
-              context.router.replace(const ControlRoute());
+              context.router.replace(const ControlRoute()); // <-- เปลี่ยนเป็นหน้าที่ต้องการเมื่อปิดสวิตช์
             }
           },
-          activeColor: Colors.green,
+          activeColor: mainColor,     // ใช้ mainColor ที่กำหนดไว้ใน constants/colors.dart
+          thumbColor: Colors.white,
+          trackColor: Colors.black12,
         ),
-    ],
-
-        backgroundColor: Colors.transparent,
-        elevation: 0,
       ),
-      body: Column(
-        children: [
-          // --------- Map ---------
-          Expanded(
-            child: FlutterMap(
-              options: MapOptions(
-                center: LatLng(19.0332772, 99.89286762),
-                zoom: 16,
-                onTap: (tapPosition, point) => _addWaypoint(point),
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                  subdomains: ['a', 'b', 'c'],
-                ),
-                // --------- Polyline ---------
-                PolylineLayer(
-                  polylines: [
-                    Polyline(
-                      points: waypoints,
-                      strokeWidth: 3,
-                      color: Colors.green,
-                    ),
-                  ],
-                ),
-                // --------- Markers ---------
-                MarkerLayer(
-                  markers: waypoints.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    LatLng point = entry.value;
-                    return Marker(
-                      point: point,
-                      width: 40,
-                      height: 40,
-                      child: GestureDetector(
-                          onLongPress: () => _removeWaypoint(index),
-                          child: const Icon(Icons.location_on, color: Colors.green, size: 40),
-                      ),
-                  );
-                  }).toList(),
-                ),
-              ],
+    ),
+    body: Column(
+      children: [
+        // --------- Map ---------
+        Expanded(
+          child: FlutterMap(
+            options: MapOptions(
+              center: LatLng(19.0332772, 99.89286762),
+              zoom: 16,
+              onTap: (tapPosition, point) => _addWaypoint(point),
             ),
-          ),
-          // --------- Info ---------
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
-              color: Color(0xFFF0FAFF),
-              border: Border(top: BorderSide(color: Colors.grey)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    "${waypoints.length} Waypoints  |  Lat ${waypoints.isNotEmpty ? waypoints.last.latitude.toStringAsFixed(6) : '-'}  |  Lon ${waypoints.isNotEmpty ? waypoints.last.longitude.toStringAsFixed(6) : '-'}",
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Text("Relay"),
-                const SizedBox(width: 4),
-                SizedBox(
-                  width: 60,
-                  height: 30,
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                    ),
-                    controller: TextEditingController(text: "5000"),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // --------- Control Buttons ---------
-          Row(
             children: [
-          const SizedBox(width: 8),
-          Expanded(           
-            child: ElevatedButton(
-              onPressed: _sendToRaspberryPi,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: mainColor,
-                minimumSize: const Size(60, 40),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+              TileLayer(
+                urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                subdomains: ['a', 'b', 'c'],
               ),
-              child: const Text(
-                'เริ่ม',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+              // --------- Polyline ---------
+              PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: waypoints,
+                    strokeWidth: 3,
+                    color: Colors.green,
+                  ),
+                ],
               ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {
-                setState(() => waypoints.clear());
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey,
-                minimumSize: const Size(60, 40),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+              // --------- Markers ---------
+              MarkerLayer(
+                markers: waypoints.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  LatLng point = entry.value;
+                  return Marker(
+                    point: point,
+                    width: 40,
+                    height: 40,
+                    child: GestureDetector(
+                      onLongPress: () => _removeWaypoint(index),
+                      child: const Icon(Icons.location_on, color: Colors.green, size: 40),
+                    ),
+                  );
+                }).toList(),
               ),
-              child: const Text(
-                'ยกเลิก',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-
             ],
           ),
-        ],
-      ),
+        ),
+        // --------- Info ---------
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            color: Color(0xFFF0FAFF),
+            border: Border(top: BorderSide(color: Colors.grey)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  "${waypoints.length} Waypoints  |  Lat ${waypoints.isNotEmpty ? waypoints.last.latitude.toStringAsFixed(6) : '-'}  |  Lon ${waypoints.isNotEmpty ? waypoints.last.longitude.toStringAsFixed(6) : '-'}",
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text("Relay"),
+              const SizedBox(width: 4),
+              SizedBox(
+                width: 60,
+                height: 30,
+                child: TextField(
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                  ),
+                  controller: TextEditingController(text: "5000"),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // --------- Control Buttons ---------
+        Row(
+          children: [
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _sendToRaspberryPi,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: mainColor,
+                  minimumSize: const Size(60, 40),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'เริ่ม',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() => waypoints.clear());
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey,
+                  minimumSize: const Size(60, 40),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'ยกเลิก',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+      ],
+    ),
     );
   }
 }

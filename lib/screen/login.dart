@@ -75,7 +75,7 @@ Widget build(BuildContext context) {
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'อีเมล',
-                      labelStyle: const TextStyle(color: mainColor, fontSize: 16),
+                      labelStyle: const TextStyle(color: grayColor, fontSize: 16),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                       enabledBorder: OutlineInputBorder(
                         borderSide: const BorderSide(color: mainColor),

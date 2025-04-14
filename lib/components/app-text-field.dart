@@ -1,10 +1,94 @@
 import 'package:flutter/material.dart';
+import '../constants/colors.dart';
+
+class AppTextField extends StatelessWidget {
+  final String title;
+  final String hintText;
+  final TextEditingController controller;
+  final bool obscureText;
+  final TextInputType keyboardType;
+  final bool isRequired;
+  final FormFieldValidator<String>? validator;
+  final ValueChanged<String>? onChanged;
+
+  const AppTextField({
+    super.key,
+    required this.title,
+    required this.controller,
+    this.hintText = '',
+    this.obscureText = false,
+    this.keyboardType = TextInputType.text,
+    this.isRequired = false,
+    this.validator,
+    this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (title.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4.0),
+            child: RichText(
+              text: TextSpan(
+                text: title,
+                style: const TextStyle(fontSize: 16, color: Colors.black),
+                children: [
+                  if (isRequired)
+                    const TextSpan(
+                      text: ' *',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        TextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          keyboardType: keyboardType,
+          validator: validator,
+          onChanged: onChanged,
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: const TextStyle(color: Colors.grey),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.grey),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.green, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+/*import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/language/language_bloc.dart';
 import '../bloc/language/language_state.dart';
 import '../constants/color.dart';
 import '../constants/size.dart'; 
 import '../models/language.dart';
+import '../bloc/language/language_bloc.dart';
+import '../constants/color.dart';
+
 
 class AppTextField extends StatefulWidget { //สร้างคลาส AppTextField เพื่อใช้ในการสร้าง TextField
   //สร้าง TextField ที่สามารถใช้งานได้ง่ายขึ้น โดยมีการกำหนดค่าต่างๆ เช่น สี ขนาด ฟอนต์ และการตรวจสอบความถูกต้องของข้อมูล
@@ -19,7 +103,6 @@ class AppTextField extends StatefulWidget { //สร้างคลาส AppTex
       this.textInputAction, //เป็น Action ของ TextInput
       this.autovalidateMode, //เป็นโหมดการตรวจสอบความถูกต้องของข้อมูลใน TextField
       this.obscureText = false, //เป็นการซ่อนข้อความใน TextField
-      this.controller, //เป็น Controller ของ TextField
       this.onFieldSubmitted, //เป็นฟังก์ชันที่ใช้เมื่อมีการส่งข้อมูลใน TextField
       this.onEditingComplete, //เป็นฟังก์ชันที่ใช้เมื่อมีการแก้ไขข้อมูลใน TextFieldเสร็จสิ้น
       this.suffixTop, //เป็น Widget ที่แสดงด้านบนของ TextField
@@ -307,4 +390,4 @@ class _AppTextFieldState extends State<AppTextField> { // State ของ AppTex
       },
     );
   }
-}
+}*/

@@ -46,7 +46,7 @@ backgroundColor: const Color(0xFFF0FAFF),
         opacity: 0.3,
         child: SizedBox(
           height: MediaQuery.of(context).size.height * 0.50,
-          width: MediaQuery.of(context).size.width * 0.7,
+          width: MediaQuery.of(context).size.width * 0.5,
           child: Image.asset(
             'lib/assets/image/8.png',
             fit: BoxFit.contain,
@@ -87,7 +87,7 @@ backgroundColor: const Color(0xFFF0FAFF),
                     style: TextStyle(
                       fontSize: 24.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green,
+                      color: mainColor,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -96,8 +96,14 @@ backgroundColor: const Color(0xFFF0FAFF),
                     controller: _usernameController,
                     decoration: InputDecoration(
                       labelText: 'ชื่อบัญชีผู้ใช้',
+                      labelStyle: const TextStyle(color: Colors.grey),
                       border: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor),
                         borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor, width: 2),
+                        borderRadius: BorderRadius.circular(12.0),
                       ),
                     ),
                   ),
@@ -120,8 +126,14 @@ backgroundColor: const Color(0xFFF0FAFF),
                             },
                             decoration: InputDecoration(
                               labelText: 'เพศ',
+                              labelStyle: const TextStyle(color: Colors.grey),
                               border: OutlineInputBorder(
+                                borderSide: const BorderSide(color: mainColor),
                                 borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(color: mainColor, width: 2),
+                                borderRadius: BorderRadius.circular(12.0),
                               ),
                             ),
                             items: ['เพศชาย', 'เพศหญิง', 'อื่นๆ']
@@ -143,8 +155,14 @@ backgroundColor: const Color(0xFFF0FAFF),
                             controller: _phoneController,
                             decoration: InputDecoration(
                               labelText: 'เบอร์โทรศัพท์',
+                              labelStyle: const TextStyle(color: Colors.grey),
                               border: OutlineInputBorder(
+                                borderSide: const BorderSide(color: mainColor),
                                 borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(color: mainColor, width: 2),
+                                borderRadius: BorderRadius.circular(12.0),
                               ),
                             ),
                           ),
@@ -159,8 +177,14 @@ backgroundColor: const Color(0xFFF0FAFF),
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'อีเมล',
+                      labelStyle: const TextStyle(color: Colors.grey),
                       border: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor),
                         borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor, width: 2),
+                        borderRadius: BorderRadius.circular(12.0),
                       ),
                     ),
                   ),
@@ -171,8 +195,14 @@ backgroundColor: const Color(0xFFF0FAFF),
                     controller: _passwordController,
                     decoration: InputDecoration(
                       labelText: 'รหัสผ่าน',
+                      labelStyle: const TextStyle(color: Colors.grey),
                       border: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor),
                         borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor, width: 2),
+                        borderRadius: BorderRadius.circular(12.0),
                       ),
                     ),
                     obscureText: true,
@@ -184,8 +214,14 @@ backgroundColor: const Color(0xFFF0FAFF),
                     controller: _confirmPasswordController,
                     decoration: InputDecoration(
                       labelText: 'ยืนยันรหัสผ่าน',
+                      labelStyle: const TextStyle(color: Colors.grey),
                       border: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor),
                         borderRadius: BorderRadius.circular(8.0),
+                      ),
+                        focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor, width: 2),
+                        borderRadius: BorderRadius.circular(12.0),
                       ),
                     ),
                     obscureText: true,

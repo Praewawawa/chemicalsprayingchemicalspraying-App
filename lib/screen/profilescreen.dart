@@ -1,8 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
-import 'package:chemicalspraying/constants/colors.dart'; // เปลี่ยนให้ตรงกับที่เก็บสีในโปรเจกต์ของคุณ
-
+import 'package:chemicalspraying/constants/colors.dart';
 
 @RoutePage(name: 'ProfileRoute')
 class ProfilePage extends StatefulWidget {
@@ -16,13 +15,12 @@ class _ProfilePageState extends State<ProfilePage> {
   int _selectedIndex = 4;
 
   final List<PageRouteInfo> _routes = [
-      AddprofileRoute(),               // 0 -> Home
-      ControlRoute(),                  // 1 -> Control
-      NotificationRoute(),             // 2 -> Notification (แจ้งเตือน)
-      NotificationSettingRoute(),      // 3 -> Setting (ตั้งค่า)
-      ProfileRoute(),                  // 4 -> Profile
+    AddprofileRoute(),
+    ControlRoute(),
+    NotificationSettingRoute(),
+    NotificationRoute(),
+    ProfileRoute(),
   ];
-
 
   void _onItemTapped(int index) {
     setState(() {
@@ -30,9 +28,10 @@ class _ProfilePageState extends State<ProfilePage> {
     });
     context.router.replace(_routes[index]);
   }
+
   @override
   Widget build(BuildContext context) {
-      return Scaffold(
+    return Scaffold(
       backgroundColor: const Color(0xFFF0FAFF),
       appBar: AppBar(
         title: const Text(
@@ -43,64 +42,141 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Column(
+      body: Stack(
         children: [
-          const SizedBox(height: 20),
-          CircleAvatar(
-            radius: 70,
-            backgroundImage: AssetImage('lib/assets/image/image.jpg'),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Praewa Sompoi',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 5),
-          const Text(
-            '@Praewa_1234',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: 200,
-            height: 45,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: mainColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () => context.router.replaceNamed('/editprofile'),
-              child: const Text(
-                      'แก้ไข',
-                      style: TextStyle(color: Colors.white), 
-                    ),
-
-            ),
-          ),
-          const SizedBox(height: 30),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 45,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: redColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: ClipRect(
+              child: Opacity(
+                opacity: 0.3,
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.90,
+                  width: MediaQuery.of(context).size.width * 0.7,
+                  child: Image.asset(
+                    'lib/assets/image/2.png',
+                    fit: BoxFit.cover,
                   ),
                 ),
-                onPressed: () => context.router.replaceNamed('/login'),
-                child: const Text(
-                        'ออกจากระบบ',
-                        style: TextStyle(color: Colors.white), 
-                      ),
-
               ),
             ),
+          ),
+          Column(
+            children: [
+              const SizedBox(height: 20),
+              CircleAvatar(
+                radius: 70,
+                backgroundImage: AssetImage('lib/assets/image/image.jpg'),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Praewa Sompoi',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 5),
+              const Text(
+                '@Praewa_1234',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: 200,
+                height: 45,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: mainColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () => context.router.replaceNamed('/editprofile'),
+                  child: const Text(
+                    'แก้ไข',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 45,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: redColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.logout, size: 80, color: redColor),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  'ยืนยันการ\nออกจากระบบ',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text(
+                                        'ยกเลิก',
+                                        style: TextStyle(
+                                            color: Colors.grey,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: mainColor,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        context.router.replaceNamed('/login');
+                                      },
+                                      child: const Text(
+                                        'ยืนยัน',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: const Text(
+                      'ออกจากระบบ',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -108,8 +184,8 @@ class _ProfilePageState extends State<ProfilePage> {
         showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: mainColor,         // ✅ สีไอคอนที่ถูกเลือก
-        unselectedItemColor: grayColor,       // ✅ สีไอคอนที่ไม่ถูกเลือก
+        selectedItemColor: mainColor,
+        unselectedItemColor: grayColor,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         items: const [
@@ -136,246 +212,5 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
     );
-
-      body: Column
-      (
-        children: [
-          const SizedBox(height: 20),
-          // Profile Image
-          CircleAvatar(
-            radius: 50,
-            backgroundImage: AssetImage('lib/assets/image/image.jpg'), // เปลี่ยนเป็นรูปของคุณ
-          ),
-          const SizedBox(height: 10),
-          // Name
-          const Text(
-            'Praewa Sompoi',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 5),
-          // Username
-          const Text(
-            '@Praewa_1234',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 20),
-          // Edit Button
-          SizedBox(
-            width: 349,
-            height: 42,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: mainColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                context.router.replaceNamed('/editprofile');// ใส่ event แก้ไข
-              },
-              child: const Text('แก้ไข'),
-            ),
-          ),
-
-          const SizedBox(height: 30),
-          const Divider(),
-
-          // Logout Button
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: SizedBox(
-              width: 364,
-              height: 53,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: redColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {
-                  context.router.replaceNamed('/login'); // ✅ Event ออกจากระบบ
-                },
-                child: const Text('ออกจากระบบ', style: TextStyle(fontSize: 16, color: Colors.white)),
-              ),
-            ),
-          ),
-        ],
-      );
   }
 }
-/*import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import 'package:chemicalspraying/router/routes.gr.dart';
-import 'package:chemicalspraying/constants/colors.dart'; // เปลี่ยนให้ตรงกับที่เก็บสีในโปรเจกต์ของคุณ
-
-
-@RoutePage(name: 'ProfileRoute')
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("โปรไฟล์")),
-      body: const Center(child: Text("Profile Page")),
-    );
-  }
-}
-class _ProfilePageState extends State<ProfilePage> {
-  int _selectedIndex = 4;
-
-
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    context.router.replace(_routes[index]);
-  }
-  @override
-  Widget build(BuildContext context) {
-      return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.router.pop(),
-        ),
-        title: const Text(
-          'โปรไฟล์',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          const SizedBox(height: 20),
-          CircleAvatar(
-            radius: 70,
-            backgroundImage: AssetImage('lib/assets/image/image.jpg'),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Praewa Sompoi',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 5),
-          const Text(
-            '@Praewa_1234',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: 200,
-            height: 45,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: mainColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () => context.router.replaceNamed('/editprofile'),
-              child: const Text(
-                      'แก้ไข',
-                      style: TextStyle(color: Colors.white), 
-                    ),
-
-            ),
-          ),
-          const SizedBox(height: 30),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 45,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: redColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () => context.router.replaceNamed('/login'),
-                child: const Text(
-                        'ออกจากระบบ',
-                        style: TextStyle(color: Colors.white), 
-                      ),
-
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-      body: Column
-      (
-        children: [
-          const SizedBox(height: 20),
-          // Profile Image
-          CircleAvatar(
-            radius: 50,
-            backgroundImage: AssetImage('lib/assets/image/image.jpg'), // เปลี่ยนเป็นรูปของคุณ
-          ),
-          const SizedBox(height: 10),
-          // Name
-          const Text(
-            'Praewa Sompoi',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 5),
-          // Username
-          const Text(
-            '@Praewa_1234',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 20),
-          // Edit Button
-          SizedBox(
-            width: 349,
-            height: 42,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: mainColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                context.router.replaceNamed('/editprofile');// ใส่ event แก้ไข
-              },
-              child: const Text('แก้ไข'),
-            ),
-          ),
-
-          const SizedBox(height: 30),
-          const Divider(),
-
-          // Logout Button
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: SizedBox(
-              width: 364,
-              height: 53,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: redColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {
-                  context.router.replaceNamed('/login'); // ✅ Event ออกจากระบบ
-                },
-                child: const Text('ออกจากระบบ', style: TextStyle(fontSize: 16, color: Colors.white)),
-              ),
-            ),
-          ),
-        ],
-      );
-  }
-}*/

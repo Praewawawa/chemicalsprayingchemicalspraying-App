@@ -22,8 +22,8 @@ class _ControlScreenState extends State<ControlScreen> {
   final List<PageRouteInfo> _routes = [
     AddprofileRoute(),
     ControlRoute(),
-    NotificationRoute(),
     NotificationSettingRoute(),
+    NotificationRoute(),
     ProfileRoute(),
   ];
 

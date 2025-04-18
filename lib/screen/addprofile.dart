@@ -19,8 +19,8 @@ class _AddprofilePageState extends State<AddprofilePage> {
   final List<PageRouteInfo> _routes = [
     AddprofileRoute(),
     const ControlRoute(),
-    const NotificationRoute(),
     const NotificationSettingRoute(),
+    const NotificationRoute(),
     const ProfileRoute(),
   ];
 

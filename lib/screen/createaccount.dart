@@ -35,6 +35,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   @override
 Widget build(BuildContext context) {
   return Scaffold(
+
 backgroundColor: const Color(0xFFF0FAFF),
     body: Stack(
       children: [
@@ -45,8 +46,8 @@ backgroundColor: const Color(0xFFF0FAFF),
       child: Opacity(
         opacity: 0.3,
         child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.50,
-          width: MediaQuery.of(context).size.width * 0.5,
+          height: MediaQuery.of(context).size.height * 0.70,
+          width: MediaQuery.of(context).size.width * 0.7,
           child: Image.asset(
             'lib/assets/image/8.png',
             fit: BoxFit.contain,

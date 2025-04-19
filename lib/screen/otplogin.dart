@@ -100,20 +100,20 @@ Widget build(BuildContext context) {
                 borderRadius: BorderRadius.circular(26),
               ),
               content: SizedBox(
-                width: 314.15, // กำหนดขนาดกล่อง dialog
-                height: 402.94,
+                width: 260, // กำหนดขนาดกล่อง dialog
+                height: 360,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center, // ตรงกลางแนวตั้ง
                   crossAxisAlignment: CrossAxisAlignment.center, // ตรงกลางแนวนอน
                   children: [
-                    Icon(Icons.verified, color: mainColor, size: 180), // ✅ แก้ตรงนี้
+                    Icon(Icons.verified, color: mainColor, size: 150), // ✅ แก้ตรงนี้
                     const SizedBox(height: 20),
                     const Text(
                       "สมัครสมาชิกสำเร็จ",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 29,
+                        fontSize: 25,
                         color: Colors.black, // ✅ หรือใช้ blackColor ถ้าเคยประกาศไว้
                       ),
                       textAlign: TextAlign.center,

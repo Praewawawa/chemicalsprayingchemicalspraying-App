@@ -38,7 +38,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             style: TextStyle(
               color: redColor,
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 12,
             ),
           ),
         ),

@@ -77,6 +77,8 @@ Widget build(BuildContext context) {
                       labelText: 'อีเมล',
                       labelStyle: const TextStyle(color: grayColor, fontSize: 16),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      filled: true, // ✅ เพิ่มเติม
+                      fillColor: Colors.white, // ✅ สีพื้นหลังไม่โปร่ง
                       enabledBorder: OutlineInputBorder(
                         borderSide: const BorderSide(color: mainColor),
                         borderRadius: BorderRadius.circular(12.0),
@@ -104,6 +106,8 @@ Widget build(BuildContext context) {
                       suffixText: 'ลืมรหัสผ่าน',
                       suffixStyle: const TextStyle(color: Colors.grey),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      filled: true, // ✅ เพิ่มเติม
+                      fillColor: Colors.white, // ✅ สีพื้นหลังไม่โปร่ง
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0),
                       ),

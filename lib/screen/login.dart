@@ -95,24 +95,28 @@ Widget build(BuildContext context) {
                 const SizedBox(height: 16),
 
                 // ✅ Password Field
+                // ✅ Email Field
                 SizedBox(
                   width: 362,
                   height: 70,
                   child: TextField(
-                    controller: _passwordController,
-                    obscureText: true,
+                    controller: _emailController,
                     decoration: InputDecoration(
-                      hintText: 'รหัสผ่าน',
-                      suffixText: 'ลืมรหัสผ่าน',
-                      suffixStyle: const TextStyle(color: Colors.grey),
+                      labelText: 'รหัสผ่าน',
+                      labelStyle: const TextStyle(color: grayColor, fontSize: 16),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                       filled: true, // ✅ เพิ่มเติม
                       fillColor: Colors.white, // ✅ สีพื้นหลังไม่โปร่ง
-                      border: OutlineInputBorder(
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor),
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor, width: 2),
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                     ),
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
 

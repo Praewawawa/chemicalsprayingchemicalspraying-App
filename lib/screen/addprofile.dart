@@ -341,7 +341,7 @@ Widget build(BuildContext context) {
             ),
             const SizedBox(height: 12),
             Text(
-              "สถานะการทำงาน",
+              "สถานะ",
               style: TextStyle(
                 color: isSprayOn ? Colors.green : Colors.red,
                 fontSize: 14,

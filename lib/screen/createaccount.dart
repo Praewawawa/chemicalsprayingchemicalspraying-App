@@ -40,7 +40,7 @@ backgroundColor: const Color(0xFFF0FAFF),
     body: Stack(
       children: [
         //  รูปมุมบนซ้าย
-      Positioned(
+      /*Positioned(
       top: 0,
       left: 0,
       child: Opacity(
@@ -54,7 +54,7 @@ backgroundColor: const Color(0xFFF0FAFF),
           ),
         ),
       ),
-    ),
+    ),*/
       
 
         //  รูปมุมล่างซ้าย

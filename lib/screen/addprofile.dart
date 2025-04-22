@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/constants/colors.dart';
+import 'package:flutter/cupertino.dart';
+
 
 
 
@@ -15,6 +17,7 @@ class AddprofilePage extends StatefulWidget {
 
 class _AddprofilePageState extends State<AddprofilePage> {
   int _selectedIndex = 0;
+  
 
   final List<PageRouteInfo> _routes = [
     AddprofileRoute(),
@@ -283,6 +286,8 @@ class SprayControlCard extends StatefulWidget {
 }
 
 class _SprayControlCardState extends State<SprayControlCard> {
+  // สถานะการทำงานของระบบฉีดพ่น
+  bool isSprayOn = false;
   int sprayLevel = 2;
 
   void _increaseLevel() {
@@ -294,48 +299,75 @@ class _SprayControlCardState extends State<SprayControlCard> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return _buildCardmin(
-      title: "ตั้งค่าระบบฉีดพ่น",
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Column(
-            children: [
-              IconButton(
-                onPressed: _increaseLevel,
-                icon: const Icon(Icons.arrow_drop_up,
-                    color: Colors.green, size: 30),
+Widget build(BuildContext context) {
+  return _buildCardmin(
+    title: "ตั้งค่าระบบฉีดพ่น",
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        // ปุ่มปรับระดับ
+        Column(
+          children: [
+            IconButton(
+              onPressed: _increaseLevel,
+              icon: const Icon(Icons.arrow_drop_up,
+                  color: Colors.green, size: 30),
+            ),
+            Text("ระดับที่ ${sprayLevel - 1}",
+                style: const TextStyle(color: Colors.grey, fontSize: 14)),
+            Text("ระดับที่ $sprayLevel",
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 18)),
+            Text("ระดับที่ ${sprayLevel + 1}",
+                style: const TextStyle(color: Colors.grey, fontSize: 14)),
+            IconButton(
+              onPressed: _decreaseLevel,
+              icon: const Icon(Icons.arrow_drop_down,
+                  color: Colors.green, size: 30),
+            ),
+          ],
+        ),
+
+        // ปุ่มเปิด/ปิด
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              isSprayOn ? "เปิด" : "ปิด",
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
-              Text("ระดับที่ ${sprayLevel - 1}",
-                  style: const TextStyle(color: Colors.grey, fontSize: 14)),
-              Text("ระดับที่ $sprayLevel",
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18)),
-              Text("ระดับที่ ${sprayLevel + 1}",
-                  style: const TextStyle(color: Colors.grey, fontSize: 14)),
-              IconButton(
-                onPressed: _decreaseLevel,
-                icon: const Icon(Icons.arrow_drop_down,
-                    color: Colors.green, size: 30),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              "สถานะการทำงาน",
+              style: TextStyle(
+                color: isSprayOn ? Colors.green : Colors.red,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
               ),
-            ],
-          ),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text("เปิด",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              SizedBox(height: 12),
-              Text("สถานะการทำงาน",
-                  style: TextStyle(
-                      color: Colors.green, fontWeight: FontWeight.bold)),
-            ],
-          )
-        ],
-      ),
-    );
-  }
+            ),
+            const SizedBox(height: 8),
+            CupertinoSwitch(
+              value: isSprayOn,
+              onChanged: (value) {
+                setState(() {
+                  isSprayOn = value;
+                });
+
+                // ✅ เพิ่มโค้ดควบคุมการทำงานจริง เช่น MQTT หรือ API
+              },
+              activeColor: Colors.green,
+              thumbColor: Colors.white,
+              trackColor: Colors.black12,
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
 }
 
 class DistanceCard extends StatelessWidget {

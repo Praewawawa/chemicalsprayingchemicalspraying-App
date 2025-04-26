@@ -1,9 +1,14 @@
+// screen/control.dart
+import 'dart:async'; // 👈 สำหรับ Timer
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:chemicalspraying/constants/colors.dart';
 import 'package:http/http.dart' as http;
 import '../router/routes.gr.dart';
+import 'dart:convert';
+import 'package:chemicalspraying/services/api_service.dart'; // ✅ เพิ่ม
+
 
 @RoutePage(name: 'ControlRoute')
 class ControlScreen extends StatefulWidget {
@@ -16,33 +21,78 @@ class ControlScreen extends StatefulWidget {
 class _ControlScreenState extends State<ControlScreen> {
   int _selectedIndex = 1;
   bool isCustomMode = false;
+  Timer? _holdTimer;
 
   final List<PageRouteInfo> _routes = [
-    AddprofileRoute(),               // 0
-    ControlRoute(),                  // 1
-    NotificationSettingRoute(),      // 2
-    NotificationRoute(),             // 3
-    ProfileRoute(),                  // 4
+    AddprofileRoute(),
+    ControlRoute(),
+    NotificationSettingRoute(),
+    NotificationRoute(),
+    ProfileRoute(),
   ];
 
-  // ✅ ฟังก์ชันส่งคำสั่ง HTTP ไปยัง Flask Server
+// ✅ ฟังก์ชันตั้งค่าโหมด
+  Future<void> setControlMode(String mode) async {
+  try {
+    await ApiService.post('/control', {
+      "device_id": 1, // เปลี่ยนเป็น device จริง
+      "mode": mode,
+    });
+    print('✅ ตั้งค่าโหมดสำเร็จ: $mode');
+  } catch (e) {
+    print('❌ ตั้งค่าโหมดล้มเหลว: $e');
+  }
+}
+
+// ✅ ฟังก์ชันดึงโหมดปัจจุบัน
+Future<void> getControlMode() async {
+  try {
+    final data = await ApiService.get('/control/1'); // เปลี่ยน device_id
+    setState(() {
+      isCustomMode = (data['mode'] == "Auto");
+    });
+    print('🎛 โหมดปัจจุบัน: ${data['mode']}');
+  } catch (e) {
+    print('❌ ดึงโหมดล้มเหลว: $e');
+  }
+}
+
+
+  // ✅ ส่งคำสั่ง HTTP ไปยัง Flask Server
   Future<void> sendCommand(String command) async {
-    final url = Uri.parse('http://192.168.81.46:5000/command'); // 🔁 เปลี่ยน IP ตรงนี้ตาม server ของคุณ
+    print('👉 ส่ง: $command');
+    final url = Uri.parse('http://192.168.137.95:5000/control'); // ปรับตาม IP จริง
     try {
-      final response = await http.post(url, body: {'command': command});
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"direction": command}),
+      );
       if (response.statusCode == 200) {
-        print('ส่งคำสั่งสำเร็จ: $command');
+        print('✅ สำเร็จ: $command');
       } else {
-        print('ส่งคำสั่งไม่สำเร็จ: ${response.statusCode}');
+        print('❌ ล้มเหลว: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('เกิดข้อผิดพลาด: $e');
+      print('❗ error: $e');
     }
   }
 
-  // ✅ ฟังก์ชัน ARM และ DISARM
-  void sendArm() => sendCommand("arm");
-  void sendDisarm() => sendCommand("disarm");
+  void sendArm() => sendCommand("ARM");  // ใช้คำสั่ง "ARM" แทน "arm"
+  void sendDisarm() => sendCommand("DISARM");  // ใช้คำสั่ง "DISARM"
+
+  void _startSendingCommand(String command) {
+    sendCommand(command); // ส่งทันทีรอบแรก
+    _holdTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
+      sendCommand(command);
+    });
+  }
+
+  void _stopSendingCommand() {
+    _holdTimer?.cancel();
+    _holdTimer = null;
+    sendCommand("stop");
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -58,8 +108,7 @@ class _ControlScreenState extends State<ControlScreen> {
       appBar: AppBar(
         title: const Text(
           "RC Control Panel",
-          style: TextStyle(
-              color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -69,12 +118,16 @@ class _ControlScreenState extends State<ControlScreen> {
             padding: const EdgeInsets.only(right: 16.0),
             child: CupertinoSwitch(
               value: isCustomMode,
-              onChanged: (value) {
-                setState(() => isCustomMode = value);
-                if (value) {
-                  context.router.replace(const ControlwaypointRoute());
-                }
-              },
+              onChanged: (value) async {
+              setState(() => isCustomMode = value);
+
+              await setControlMode(value ? "Auto" : "Manual"); // ✅ อัปเดตโหมดไป Node.js
+
+              if (value) {
+                context.router.replace(const ControlwaypointRoute());
+              }
+            },
+
               activeColor: Colors.green,
               thumbColor: Colors.white,
               trackColor: Colors.black12,
@@ -85,7 +138,6 @@ class _ControlScreenState extends State<ControlScreen> {
       body: Column(
         children: [
           const SizedBox(height: 16),
-          // ✅ ปุ่ม ARM / DISARM
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -95,7 +147,6 @@ class _ControlScreenState extends State<ControlScreen> {
             ],
           ),
           const SizedBox(height: 30),
-          // ✅ ปุ่มควบคุมทิศทางแบบตาราง
           Center(
             child: Table(
               defaultColumnWidth: const FixedColumnWidth(70),
@@ -163,7 +214,9 @@ class _ControlScreenState extends State<ControlScreen> {
 
   Widget _directionButton(IconData icon, String command) {
     return GestureDetector(
-      onTap: () => sendCommand(command), // ✅ ใช้ค่าจากพารามิเตอร์
+      onTapDown: (_) => _startSendingCommand(command),
+      onTapUp: (_) => _stopSendingCommand(),
+      onTapCancel: () => _stopSendingCommand(),
       child: Container(
         width: 60,
         height: 60,
@@ -209,7 +262,7 @@ class _ControlScreenState extends State<ControlScreen> {
       child: Text(
         label,
         style: const TextStyle(
-          color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
       ),
     );
   }

@@ -1,9 +1,11 @@
+// screen/createaccount.dart
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:chemicalspraying/components/app_button.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/components/cardInfo.dart';
 import 'package:chemicalspraying/constants/colors.dart';
+import 'package:chemicalspraying/services/api_service.dart';
 
 @RoutePage( name: 'CreateAccountRoute')
 class CreateAccountPage extends StatelessWidget {
@@ -39,22 +41,7 @@ Widget build(BuildContext context) {
 backgroundColor: const Color(0xFFF0FAFF),
     body: Stack(
       children: [
-        //  รูปมุมบนซ้าย
-      /*Positioned(
-      top: 0,
-      left: 0,
-      child: Opacity(
-        opacity: 0.3,
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.70,
-          width: MediaQuery.of(context).size.width * 0.7,
-          child: Image.asset(
-            'lib/assets/image/8.png',
-            fit: BoxFit.contain,
-          ),
-        ),
-      ),
-    ),*/
+
       
 
         //  รูปมุมล่างซ้าย
@@ -232,71 +219,93 @@ backgroundColor: const Color(0xFFF0FAFF),
 
                   // ✅ ปุ่มสมัครสมาชิก
                   AppButton(
-                    title: "สมัครสมาชิก",
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.check_circle,
-                                  color: mainColor, size: 40),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'สมัครสมาชิกสำเร็จ!',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 20),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.grey[300],
-                                      minimumSize: const Size(115, 42),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8.42),
-                                      ),
-                                    ),
-                                    child: const Text('ยกเลิก',
-                                        style:
-                                            TextStyle(color: Colors.black)),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      context.router
-                                          .replaceNamed('/otplogin');
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: mainColor,
-                                      minimumSize: const Size(115, 42),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8.42),
-                                      ),
-                                    ),
-                                    child: const Text('ยืนยัน',
-                                        style:
-                                            TextStyle(color: Colors.white)),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                  title: "สมัครสมาชิก",
+                  onPressed: () async {
+                    // 🔹 เช็กว่ารหัสผ่านและยืนยันรหัสผ่านตรงกันไหม
+                    if (_passwordController.text != _confirmPasswordController.text) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("รหัสผ่านไม่ตรงกัน")),
                       );
-                    },
-                  ),
+                      return;
+                    }
+
+                    try {
+                      // 🔹 ยิง API ไปหลังบ้าน
+                      final response = await ApiService.registerUser({
+                        "fullname": _usernameController.text.trim(),
+                        "email": _emailController.text.trim(),
+                        "phone": _phoneController.text.trim(),
+                        "gender": _selectedGender,
+                        "password": _passwordController.text.trim(),
+                      });
+
+                      if (response.statusCode == 201) {
+                        // 🔹 ถ้าสมัครสำเร็จ แสดง Dialog สำเร็จ
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.check_circle, color: mainColor, size: 40),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'สมัครสมาชิกสำเร็จ!',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.grey[300],
+                                        minimumSize: const Size(115, 42),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8.42),
+                                        ),
+                                      ),
+                                      child: const Text('ยกเลิก', style: TextStyle(color: Colors.black)),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        context.router.replaceNamed('/otplogin');
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: mainColor,
+                                        minimumSize: const Size(115, 42),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8.42),
+                                        ),
+                                      ),
+                                      child: const Text('ยืนยัน', style: TextStyle(color: Colors.white)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("สมัครไม่สำเร็จ: ${response.body}")),
+                        );
+                      }
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("เกิดข้อผิดพลาด: $e")),
+                      );
+                    }
+                  },
+                ),
+
 
                   const SizedBox(height: 12),
 

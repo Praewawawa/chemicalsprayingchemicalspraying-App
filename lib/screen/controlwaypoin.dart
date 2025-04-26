@@ -1,3 +1,4 @@
+// screen/controlwaypoin.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -7,6 +8,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/constants/colors.dart'; // <-- เปลี่ยนให้ตรงกับที่เก็บสีในโปรเจกต์ของคุณ
 import 'package:flutter/cupertino.dart';
+import 'package:chemicalspraying/services/api_service.dart'; // <-- เพิ่ม import สำหรับ API service
 
 
 @RoutePage(name: 'ControlwaypointRoute')
@@ -36,30 +38,40 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
     });
   }
 
-  // ---- 3. ส่ง Waypoints ไปยัง Raspberry Pi ----
-  Future<void> _sendToRaspberryPi() async {
-    final url = Uri.parse('http://<IP-ADDRESS-PI>:5000/waypoints'); // <-- เปลี่ยนเป็น IP จริงของ Pi
+  // ---- 3. ฟังก์ชันส่ง waypoint ทีละจุดไปที่ API ----
+  Future<void> sendWaypointsToServer() async {
+    try {
+      for (LatLng point in waypoints) {
+        await ApiService.post(
+          '/gps',
+          {
+            "device_id": 1,
+            "lat": point.latitude,
+            "lng": point.longitude,
+            "timestamp": DateTime.now().toIso8601String()
+          },
+        );
+      }
 
-    final data = waypoints
-        .map((point) => {'lat': point.latitude, 'lon': point.longitude})
-        .toList();
-
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'waypoints': data}),
-    );
-
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("ส่งข้อมูลสำเร็จ")),
+      await ApiService.post(
+        '/control',
+        {
+          "device_id": 1,
+          "mode": "Auto"
+        },
       );
-    } else {
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("ส่งข้อมูลไม่สำเร็จ")),
+        const SnackBar(content: Text("ส่ง Waypoints ไปยังเซิร์ฟเวอร์สำเร็จ")),
+      );
+    } catch (e) {
+      print("❌ Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("เกิดข้อผิดพลาดในการส่งข้อมูล")),
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +179,7 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
             const SizedBox(width: 8),
             Expanded(
               child: ElevatedButton(
-                onPressed: _sendToRaspberryPi,
+                onPressed: sendWaypointsToServer,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: mainColor,
                   minimumSize: const Size(60, 40),

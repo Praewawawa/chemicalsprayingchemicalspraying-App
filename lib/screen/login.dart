@@ -1,9 +1,12 @@
+// screen/login.dart
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:chemicalspraying/router/routes.gr.dart'; // เปลี่ยน your_app_name ให้ตรงกับชื่อโปรเจกต์
 import 'package:chemicalspraying/components/app_button.dart';
 import 'package:chemicalspraying/constants/colors.dart'; // เปลี่ยนให้ตรงกับที่เก็บสีในโปรเจกต์ของคุณ
+import 'package:chemicalspraying/services/api_service.dart'; // ✅ ต้องเพิ่ม
+
 
 
 
@@ -100,7 +103,7 @@ Widget build(BuildContext context) {
                   width: 362,
                   height: 70,
                   child: TextField(
-                    controller: _emailController,
+                    controller: _passwordController,
                     decoration: InputDecoration(
                       labelText: 'รหัสผ่าน',
                       labelStyle: const TextStyle(color: grayColor, fontSize: 16),
@@ -138,16 +141,44 @@ Widget build(BuildContext context) {
 
                 const SizedBox(height: 12),
 
-                // ✅ ปุ่มเข้าสู่ระบบ
                 AppButton(
-                  title: "เข้าสู่ระบบ",
-                  width: 357,
-                  height: 65,
-                  onPressed: () {
-                    context.router.replaceNamed('/addprofile');
-                    print("เข้าสู่ระบบ");
-                  },
-                ),
+                title: "เข้าสู่ระบบ",
+                width: 357,
+                height: 65,
+                onPressed: () async {
+                  // ✅ ตรวจว่าใส่ครบไหม
+                  if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("กรุณากรอกอีเมลและรหัสผ่าน")),
+                    );
+                    return;
+                  }
+
+                  try {
+                    // ✅ เรียก API login
+                    final response = await ApiService.loginUser(
+                      _emailController.text.trim(),
+                      _passwordController.text.trim(),
+                    );
+
+                    if (response.statusCode == 200) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("เข้าสู่ระบบสำเร็จ")),
+                      );
+                      context.router.replaceNamed('/addprofile'); // ✅ ไปหน้าโปรไฟล์
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("เข้าสู่ระบบล้มเหลว: ${response.body}")),
+                      );
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("เกิดข้อผิดพลาด: $e")),
+                    );
+                  }
+                },
+              ),
+
 
                 const SizedBox(height: 12),
 

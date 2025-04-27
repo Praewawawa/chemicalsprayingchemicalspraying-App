@@ -29,23 +29,7 @@ class ApiService {
     );
   }
 
-  // ✅ ฟังก์ชัน PUT (เช่น /users/update/:id)
-  static Future<dynamic> put(String endpoint, Map<String, dynamic> data) async {
-    final url = Uri.parse(_baseUrl + endpoint);
-    final response = await http.put(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(data),
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to PUT data: ${response.body}');
-    }
-  }
-
-  // ✅ ฟังก์ชัน POST (เช่น /control, /gps)
+  // ✅ ฟังก์ชัน POST ทั่วไป (เช่น /otp/create-otp, /control, /gps)
   static Future<dynamic> post(String endpoint, Map<String, dynamic> data) async {
     final url = Uri.parse(_baseUrl + endpoint);
     final response = await http.post(
@@ -61,7 +45,7 @@ class ApiService {
     }
   }
 
-  // ✅ ฟังก์ชัน GET (เช่น /control/:device_id)
+  // ✅ ฟังก์ชัน GET ทั่วไป (เช่น /control/:device_id, /gps/device/:device_id)
   static Future<dynamic> get(String endpoint) async {
     final url = Uri.parse(_baseUrl + endpoint);
     final response = await http.get(
@@ -73,6 +57,22 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to GET data: ${response.body}');
+    }
+  }
+
+  // ✅ ฟังก์ชัน PUT ทั่วไป (เช่น /users/update/:id)
+  static Future<dynamic> put(String endpoint, Map<String, dynamic> data) async {
+    final url = Uri.parse(_baseUrl + endpoint);
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(data),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to PUT data: ${response.body}');
     }
   }
 }

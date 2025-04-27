@@ -113,9 +113,13 @@ abstract class $AppRouter extends _i19.RootStackRouter {
       );
     },
     OTPLoginRoute.name: (routeData) {
+      final args = routeData.argsAs<OTPLoginRouteArgs>();
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i14.OTPLoginPage(),
+        child: _i14.OTPLoginPage(
+          key: args.key,
+          email: args.email,
+        ),
       );
     },
     OTPVerificationRoute.name: (routeData) {
@@ -331,16 +335,40 @@ class NotificationSettingRoute extends _i19.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i14.OTPLoginPage]
-class OTPLoginRoute extends _i19.PageRouteInfo<void> {
-  const OTPLoginRoute({List<_i19.PageRouteInfo>? children})
-      : super(
+class OTPLoginRoute extends _i19.PageRouteInfo<OTPLoginRouteArgs> {
+  OTPLoginRoute({
+    _i20.Key? key,
+    required String email,
+    List<_i19.PageRouteInfo>? children,
+  }) : super(
           OTPLoginRoute.name,
+          args: OTPLoginRouteArgs(
+            key: key,
+            email: email,
+          ),
           initialChildren: children,
         );
 
   static const String name = 'OTPLoginRoute';
 
-  static const _i19.PageInfo<void> page = _i19.PageInfo<void>(name);
+  static const _i19.PageInfo<OTPLoginRouteArgs> page =
+      _i19.PageInfo<OTPLoginRouteArgs>(name);
+}
+
+class OTPLoginRouteArgs {
+  const OTPLoginRouteArgs({
+    this.key,
+    required this.email,
+  });
+
+  final _i20.Key? key;
+
+  final String email;
+
+  @override
+  String toString() {
+    return 'OTPLoginRouteArgs{key: $key, email: $email}';
+  }
 }
 
 /// generated route for

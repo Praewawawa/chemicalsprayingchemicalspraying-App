@@ -40,7 +40,7 @@ dependencies:
   get_it: ^7.6.7
   auto_route_generator: ^7.3.2
   flutter_localization: ^0.2.0
-  shared_preferences: ^2.2.2
+  shared_preferences: ^2.5.3
   flutter_launcher_icons: ^0.13.1
   google_maps_flutter: ^2.2.0
   build_runner: ^2.4.15
@@ -63,7 +63,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "lib/assets/image/image.png"
+  image_path: "assets/image/image.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -78,13 +78,14 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/
+    - assets/image/
     - lib/assets/image/image.png
     - lib/assets/image/16.png
     - lib/assets/image/8.png
     - lib/assets/image/15.png
     - lib/assets/image/2.png
     - lib/assets/image/3.png
+
 
 
 

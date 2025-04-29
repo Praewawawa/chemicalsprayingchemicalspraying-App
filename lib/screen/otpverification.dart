@@ -1,3 +1,4 @@
+// screen/otpverification.dart
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:chemicalspraying/router/routes.gr.dart'; 
@@ -6,7 +7,9 @@ import 'package:chemicalspraying/components/app_button.dart';
 
 @RoutePage()
 class OTPVerificationScreen extends StatelessWidget {
-  const OTPVerificationScreen({super.key});  // ✅ ลบ constructor ซ้ำซ้อน
+  final String email;
+  final String purpose;
+  const OTPVerificationScreen({Key? key,required this.email,required this.purpose,}) : super(key: key);
   static const String routeName = "/otp-verification";
 
   @override
@@ -32,7 +35,7 @@ class OTPVerificationScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(
-                4,
+                6,
                 (index) => SizedBox(
                   width: 50,
                   child: TextField(

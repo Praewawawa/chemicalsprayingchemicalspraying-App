@@ -8,6 +8,7 @@ import 'package:chemicalspraying/services/api_service.dart'; // ✅ ต้อง
 
 @RoutePage(name: 'OTPLoginRoute')
 class OTPLoginPage extends StatefulWidget {
+  // ✅ รับอีเมลจากหน้า Login
   final String email;
 
   const OTPLoginPage({super.key, required this.email});
@@ -18,10 +19,18 @@ class OTPLoginPage extends StatefulWidget {
 
 // ✅ ต้องเป็น State แยกจาก Widget แบบนี้
 class _OTPLoginPageState extends State<OTPLoginPage> {
-  final List<TextEditingController> otpControllers = List.generate(
-    4,
+ 
+
+    final List<TextEditingController> otpControllers = List.generate(
+    6,
     (index) => TextEditingController(),
   );
+
+  final List<FocusNode> otpFocusNodes = List.generate(
+    6,
+    (index) => FocusNode(),
+  );
+
 
 Future<void> sendOtpToEmail() async {
   try {
@@ -77,6 +86,8 @@ Future<void> sendOtpToEmail() async {
 
 
 
+
+
   @override
 Widget build(BuildContext context) {
   return Scaffold(
@@ -98,30 +109,44 @@ Widget build(BuildContext context) {
           ),
           const SizedBox(height: 20),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(
-              6,
-              (index) => SizedBox(
-                width: 50,
-                child: TextField(
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  maxLength: 1,
-                  decoration: InputDecoration(
-                    counterText: '',
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.green),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.green, width: 2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(
+            6,
+            (index) => SizedBox(
+              width: 50,
+              child: TextField(
+                controller: otpControllers[index],
+                focusNode: otpFocusNodes[index],
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                maxLength: 1,
+                decoration: InputDecoration(
+                  counterText: '',
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.green),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.green, width: 2),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
+                onChanged: (value) {
+                  if (value.length == 1) {
+                    if (index < 5) {
+                      FocusScope.of(context).requestFocus(otpFocusNodes[index + 1]);
+                    } else {
+                      FocusScope.of(context).unfocus();
+                    }
+                  }
+                },
               ),
             ),
           ),
+        ),
+
+
+          // ✅ เพิ่มปุ่มส่ง OTP อีกครั้ง
           Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -154,47 +179,48 @@ Widget build(BuildContext context) {
 
           // ✅ เปลี่ยนปุ่มเป็น AppButton
           AppButton(
-  title: "ยืนยัน",
-  width: 348.24,
-  height: 58.92,
-  onPressed: () async {
-    final otpCode = otpControllers.map((c) => c.text).join(); // ✅ รวมรหัส OTP
+          title: "ยืนยัน",
+          width: 348.24,
+          height: 58.92,
+          onPressed: () async {
+            final otpCode = otpControllers.map((c) => c.text).join(); // ✅ รวมรหัส OTP
 
-    if (otpCode.length == 6) {
-      final success = await verifyOtp(); // ✅ เรียก verifyOtp() ไม่ส่ง otpCode เข้าไป
+            if (otpCode.length == 6) {
+              final success = await ApiService.verifyOtp(widget.email, otpCode);
 
-      if (success) {
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(26),
-            ),
-            content: SizedBox(
-              width: 260,
-              height: 360,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(Icons.verified, color: mainColor, size: 150),
-                  const SizedBox(height: 20),
-                  const Text(
-                    "สมัครสมาชิกสำเร็จ",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25,
-                      color: Colors.black,
+
+              if (success) {
+                await showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(26),
                     ),
-                    textAlign: TextAlign.center,
+                    content: SizedBox(
+                      width: 260,
+                      height: 360,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(Icons.verified, color: mainColor, size: 150),
+                          const SizedBox(height: 20),
+                          const Text(
+                            "สมัครสมาชิกสำเร็จ",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 25,
+                              color: Colors.black,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        );
+                );
 
 
               // รอ 2 วินาที แล้วเปลี่ยนหน้า

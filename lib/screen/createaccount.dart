@@ -6,6 +6,9 @@ import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/components/cardInfo.dart';
 import 'package:chemicalspraying/constants/colors.dart';
 import 'package:chemicalspraying/services/api_service.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 @RoutePage(name: 'CreateAccountRoute')
 class CreateAccountPage extends StatelessWidget {
@@ -34,6 +37,67 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   String _selectedGender = 'เพศชาย';
+
+Future<void> registerAndLogin() async {
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("รหัสผ่านไม่ตรงกัน")),
+      );
+      return;
+    }
+
+    try {
+      // ✅ สมัครสมาชิก
+      final registerResponse = await ApiService.post('/users/register', {
+        "fullname": _usernameController.text.trim(),
+        "email": _emailController.text.trim(),
+        "phone": _phoneController.text.trim(),
+        "gender": _selectedGender,
+        "password": _passwordController.text.trim(),
+      });
+
+      if (registerResponse.statusCode == 201) {
+        // ✅ สมัครเสร็จ ยิง login ต่อ
+        final loginResponse = await ApiService.loginUser(
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
+        );
+
+        if (loginResponse.statusCode == 200) {
+          final data = jsonDecode(loginResponse.body);
+          final prefs = await SharedPreferences.getInstance();
+
+          await prefs.setInt('user_id', data['user']['id']);
+          await prefs.setString('profile_name', data['user']['name']);
+          await prefs.setString('profile_email', data['user']['email']);
+          await prefs.setString('profile_phone', data['user']['phone'] ?? '');
+          await prefs.setString('profile_gender', data['user']['gender'] ?? '');
+
+          // ✅ ส่ง OTP เพื่อยืนยัน email
+          await ApiService.post('/otp/create-otp', {
+            "email": _emailController.text.trim(),
+            "purpose": "register"
+          });
+
+          context.router.push(
+            OTPVerificationRoute(email: _emailController.text.trim(), purpose: 'register')
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Login ล้มเหลว: ${loginResponse.body}")),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("สมัครสมาชิกล้มเหลว: ${registerResponse.body}")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("เกิดข้อผิดพลาด: $e")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -8,6 +8,9 @@ import 'package:chemicalspraying/constants/colors.dart';
 import 'package:chemicalspraying/services/api_service.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
 
 @RoutePage(name: 'EditProfileRoute')
 class EditProfilePage extends StatefulWidget {
@@ -26,57 +29,89 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String selectedGender = 'หญิง'; // default
   final List<String> genderOptions = ['ชาย', 'หญิง', 'อื่นๆ'];
 
+  File? _imageFile; // ✅ ตัวแปรเก็บรูปภาพ
 
-  File? _image; // ✅ เพิ่มตัวแปรเก็บรูปภาพที่เลือก
 
   @override
-  void initState() {
-    super.initState();
-    _loadProfileData(); // ✅ โหลดข้อมูลเก่าเมื่อเปิดหน้า
+void initState() {
+  super.initState();
+  fetchUserData();
+} // ✅ เรียกฟังก์ชันโหลดข้อมูลโปรไฟล์เก่า
+
+  
+
+  Future<void> _pickImage() async {
+  final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+  if (pickedFile != null) {
+    setState(() {
+      _imageFile = File(pickedFile.path); // ✅ ใช้ตัวแปรที่มีอยู่จริง
+    });
   }
-  // ✅ ฟังก์ชันโหลดข้อมูลโปรไฟล์เก่า
-      void _loadProfileData() {
-        setState(() {
-          // ✅ สมมติเขียนข้อมูลเทสไว้ (จริงๆ ต้องโหลดจาก login หรือ local storage)
-          nameController.text = 'ชื่อเดิมของผู้ใช้';
-          emailController.text = 'อีเมลเดิมของผู้ใช้';
-          phoneController.text = 'เบอร์เดิมของผู้ใช้';
-          selectedGender = 'ชาย';
-        });
-      }
+}
 
-      Future<void> _pickImage() async {
-        // ✅ ฟังก์ชันเลือกรูปจาก Gallery
-        final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-        if (pickedFile != null) {
-          setState(() {
-            _image = File(pickedFile.path); // ✅ เก็บไฟล์ที่เลือก
-          });
-        }
-      }
 
-      Future<void> updateProfile() async {
-        // ✅ ฟังก์ชันส่งข้อมูลอัปเดตโปรไฟล์ไปที่ Server
-        try {
-          await ApiService.put('/users/update/1', { // ✅ ต้องเปลี่ยน 1 เป็น user_id จริง
-            "name": nameController.text,
-            "email": emailController.text,
-            "phone": phoneController.text,
-            "gender": selectedGender,
-            "password": passwordController.text.isNotEmpty ? passwordController.text : null,
-          });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('บันทึกข้อมูลสำเร็จ ✅')),
-          );
-          context.router.replace(const ProfileRoute());
-        } catch (e) {
-          print('❌ อัปเดตโปรไฟล์ล้มเหลว: $e');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('บันทึกข้อมูลไม่สำเร็จ ❌')),
-          );
-        }
-      }
+// ✅ ฟังก์ชันโหลดข้อมูลโปรไฟล์เก่า
+Future<void> fetchUserData() async {
+  final prefs = await SharedPreferences.getInstance();
+  final userId = prefs.getInt('user_id');
+  if (userId == null) return;
+
+  final response = await ApiService.get('/users/$userId');
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    setState(() {
+      nameController.text = data['name'];
+      emailController.text = data['email'];
+      phoneController.text = data['phone'];
+      selectedGender = data['gender'];
+    });
+  } else {
+    print('❌ ไม่สามารถโหลดข้อมูลผู้ใช้');
+  }
+}
+
+  
+// ✅ ฟังก์ชันอัปเดตโปรไฟล์
+    Future<void> updateProfile() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('user_id'); // ✅ ดึง user_id ที่ login แล้วเซฟไว้ตอน login
+
+    if (userId == null) {
+      throw Exception('ไม่พบ user_id');
+    }
+
+    await ApiService.put('/users/update/$userId', {
+      "name": nameController.text,
+      "email": emailController.text,
+      "phone": phoneController.text,
+      "gender": selectedGender,
+      "password": passwordController.text.isNotEmpty ? passwordController.text : null,
+    });
+
+    // ✅ Update local profile
+    await prefs.setString('profile_name', nameController.text);
+    await prefs.setString('profile_email', emailController.text);
+    await prefs.setString('profile_phone', phoneController.text);
+    await prefs.setString('profile_gender', selectedGender);
+    if (_imageFile != null) {
+      await prefs.setString('profile_image', _imageFile!.path);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('บันทึกข้อมูลสำเร็จ ✅')),
+    );
+    context.router.replace(const ProfileRoute());
+  } catch (e) {
+    print('❌ อัปเดตโปรไฟล์ล้มเหลว: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('บันทึกข้อมูลไม่สำเร็จ ❌')),
+    );
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,10 +120,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: TextButton(
-          onPressed: () => context.router.pop(), // ✅ ปุ่มยกเลิก กลับไปหน้า Profile
+          onPressed: () => context.router.replaceNamed('/profile'),
+          style: TextButton.styleFrom(
+            minimumSize: Size(10, 20), // ✅ ป้องกันการบีบจน wrap
+            padding: EdgeInsets.symmetric(horizontal: 8),
+          ),
           child: const Text(
             'ยกเลิก',
-            style: TextStyle(color: redColor, fontWeight: FontWeight.bold),
+            overflow: TextOverflow.ellipsis, // ✅ ป้องกันตัดคำ
+            style: TextStyle(
+              color: redColor,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
@@ -103,7 +146,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   height: MediaQuery.of(context).size.height * 0.50,
                   width: MediaQuery.of(context).size.width * 0.7,
                   child: Image.asset(
-                    'assets/image/3.png',
+                    'lib/assets/image/3.png',
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -117,27 +160,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
             child: Column(
               children: [
                 // ✅ รูปโปรไฟล์ (กดเปลี่ยนรูปได้)
-                Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    CircleAvatar(
-                    radius: 60,
-                    backgroundImage: _image != null
-                        ? FileImage(_image!) as ImageProvider
-                        : const AssetImage('assets/images/profile.jpg'),
+                GestureDetector( // ✅ กดเปลี่ยนรูปได้
+                onTap: _pickImage,
+                child: CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.grey[200],
+                  backgroundImage: _imageFile != null
+                      ? FileImage(_imageFile!) // ✅ โหลดจากไฟล์จริง
+                      : AssetImage('lib/assets/image/15.png') as ImageProvider,
+                  child: Align(
+                    alignment: Alignment.bottomRight,
+                    child: Icon(Icons.edit, size: 20, color: Colors.grey),
                   ),
-                    // ✅ ปุ่มเปลี่ยนรูป
-
-                    GestureDetector(
-                      onTap: _pickImage, // ✅ กดแล้วเลือกรูป
-                      child: CircleAvatar(
-                        radius: 16,
-                        backgroundColor: Colors.white,
-                        child: const Icon(Icons.edit, size: 16, color: Colors.grey),
-                      ),
-                    ),
-                  ],
                 ),
+              ),
+
+
+
                 const SizedBox(height: 16),
 
                 // Name

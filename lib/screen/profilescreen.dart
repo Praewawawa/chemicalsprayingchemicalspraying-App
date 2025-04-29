@@ -1,7 +1,10 @@
+// screen/profilescreen.dart
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/constants/colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 
 @RoutePage(name: 'ProfileRoute')
 class ProfilePage extends StatefulWidget {
@@ -12,6 +15,9 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  String _name = '';
+  String _email = '';
+  File? _profileImage;
   int _selectedIndex = 4;
 
   final List<PageRouteInfo> _routes = [
@@ -21,6 +27,24 @@ class _ProfilePageState extends State<ProfilePage> {
     NotificationRoute(),
     ProfileRoute(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _name = prefs.getString('profile_name') ?? 'ชื่อของคุณ';
+      _email = prefs.getString('profile_email') ?? 'อีเมลของคุณ';
+      final imagePath = prefs.getString('profile_image');
+      if (imagePath != null) {
+        _profileImage = File(imagePath);
+      }
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -62,21 +86,17 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           Column(
             children: [
-              const SizedBox(height: 20),
-              CircleAvatar(
-                radius: 70,
-                backgroundImage: AssetImage('lib/assets/image/image.jpg'),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Praewa Sompoi',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 5),
-              const Text(
-                '@Praewa_1234',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
+            const SizedBox(height: 20),
+            CircleAvatar(
+              radius: 70,
+              backgroundImage: _profileImage != null
+                  ? FileImage(_profileImage!) //
+                  : const AssetImage('assets/image/15.png') as ImageProvider,
+            ),
+            const SizedBox(height: 10),
+            Text(_name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 5),
+            Text(_email, style: const TextStyle(fontSize: 16, color: Colors.grey)),
               const SizedBox(height: 20),
               SizedBox(
                 width: 200,

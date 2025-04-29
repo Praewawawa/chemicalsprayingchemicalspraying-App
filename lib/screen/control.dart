@@ -61,7 +61,7 @@ Future<void> getControlMode() async {
   // ✅ ส่งคำสั่ง HTTP ไปยัง Flask Server
   Future<void> sendCommand(String command) async {
     print('👉 ส่ง: $command');
-    final url = Uri.parse('http://192.168.137.95:5000/control'); // ปรับตาม IP จริง
+    final url = Uri.parse('http://192.168.46.46:5000/control'); // ปรับตาม IP จริง
     try {
       final response = await http.post(
         url,

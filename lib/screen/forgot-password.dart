@@ -16,33 +16,50 @@ class ForgotPassword extends StatefulWidget {
 }
 
 class _ForgotPasswordState extends State<ForgotPassword> {
-  final TextEditingController emailController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+
+
 
   Future<void> sendOtpForReset() async {
-    final email = emailController.text.trim();
 
-    final response = await ApiService.post('/otp/create-otp', {
+
+
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty || !email.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("กรุณาใส่อีเมลที่ถูกต้อง")),
+      );
+      return;
+    }
+
+    try {
+      final response = await ApiService.post('/otp/create-otp', {
       "email": email,
       "purpose": "reset"
     });
 
-    if (response.statusCode == 200) {
-      context.router.push(
-        OTPVerificationRoute(
-          email: email,
-          purpose: 'reset',
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("ไม่สามารถส่ง OTP ได้")),
-      );
-    }
+    // ไม่ต้อง .body ถ้า response เป็น Map อยู่แล้ว
+    if (response['message'].toString().contains('OTP')) {
+    context.router.push(
+      OTPVerificationRoute(email: email, purpose: 'reset'),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("ไม่สามารถส่ง OTP ได้: ${response['message']}")),
+    );
+  }
+
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("เกิดข้อผิดพลาดในการส่ง OTP")),
+          );
+        }
   }
 
   @override
   void dispose() {
-    emailController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -55,7 +72,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 60),
             const Center(
               child: Text(
                 'ลืมรหัสผ่าน',
@@ -68,23 +85,29 @@ class _ForgotPasswordState extends State<ForgotPassword> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
+            
             TextField(
-              controller: emailController,
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 hintText: 'example@gmail.com',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                   borderSide: const BorderSide(color: mainColor),
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: const BorderSide(color: mainColor, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             AppButton(
               title: "ยืนยัน",
               onPressed: sendOtpForReset,
             ),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

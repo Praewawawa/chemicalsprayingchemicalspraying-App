@@ -140,11 +140,13 @@ abstract class $AppRouter extends _i19.RootStackRouter {
       );
     },
     ResetPasswordRoute.name: (routeData) {
-      final args = routeData.argsAs<ResetPasswordRouteArgs>(
-          orElse: () => const ResetPasswordRouteArgs());
+      final args = routeData.argsAs<ResetPasswordRouteArgs>();
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: _i17.ResetPassword(key: args.key),
+        child: _i17.ResetPassword(
+          key: args.key,
+          email: args.email,
+        ),
       );
     },
     UserProfileRoute.name: (routeData) {
@@ -439,10 +441,14 @@ class ProfileRoute extends _i19.PageRouteInfo<void> {
 class ResetPasswordRoute extends _i19.PageRouteInfo<ResetPasswordRouteArgs> {
   ResetPasswordRoute({
     _i20.Key? key,
+    required String email,
     List<_i19.PageRouteInfo>? children,
   }) : super(
           ResetPasswordRoute.name,
-          args: ResetPasswordRouteArgs(key: key),
+          args: ResetPasswordRouteArgs(
+            key: key,
+            email: email,
+          ),
           initialChildren: children,
         );
 
@@ -453,13 +459,18 @@ class ResetPasswordRoute extends _i19.PageRouteInfo<ResetPasswordRouteArgs> {
 }
 
 class ResetPasswordRouteArgs {
-  const ResetPasswordRouteArgs({this.key});
+  const ResetPasswordRouteArgs({
+    this.key,
+    required this.email,
+  });
 
   final _i20.Key? key;
 
+  final String email;
+
   @override
   String toString() {
-    return 'ResetPasswordRouteArgs{key: $key}';
+    return 'ResetPasswordRouteArgs{key: $key, email: $email}';
   }
 }
 

@@ -16,13 +16,13 @@ class NotificationSettingPage extends StatefulWidget {
 }
 
 class _NotificationSettingPageState extends State<NotificationSettingPage> {
-  int _selectedIndex = 3; // index ของหน้า ตั้งค่า
+  int _selectedIndex = 2; // index ของหน้า ตั้งค่า
   bool speedAlert = true;
   bool batteryAlert = false;
   bool chemicalAlert = true;
   bool routeAlert = false;
 
-  final List<PageRouteInfo> _routes = [
+    final List<PageRouteInfo> _routes = [
     AddprofileRoute(),
     ControlRoute(),
     NotificationSettingRoute(),

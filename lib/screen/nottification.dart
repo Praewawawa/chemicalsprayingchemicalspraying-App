@@ -8,6 +8,8 @@ import 'package:chemicalspraying/constants/colors.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:auto_route/auto_route.dart';
 import 'dart:convert';
+import 'dart:io';
+
 
 class NotificationItem {
   final int id;
@@ -52,7 +54,7 @@ class _NotificationPageState extends State<NotificationPage>
   List<NotificationItem> notifications = [];
   late TabController _tabController;
 
-  int _selectedIndex = 4;
+  int _selectedIndex = 3; // index ของหน้า แจ้งเตือน
   final List<PageRouteInfo> _routes = const [
     AddprofileRoute(),
     ControlRoute(),
@@ -78,9 +80,9 @@ class _NotificationPageState extends State<NotificationPage>
 /// ฟังก์ชันนี้จะถูกเรียกเมื่อมีการเชื่อมต่อ MQTT
   void _setupMqtt() async {
     client = MqttServerClient('test.mosquitto.org', 'flutter_client_${DateTime.now().millisecondsSinceEpoch}'); // เปลี่ยนเป็น broker ที่คุณใช้
-    /*client.port = 1883;
+    client.port = 8883;
     client.keepAlivePeriod = 60;
-    client.onBadCertificate = (X509Certificate cert) => true;*/
+    client.onBadCertificate = (X509Certificate cert) => true;
     client.logging(on: false);
     client.onConnected = () {
       print('MQTT Connected'); 

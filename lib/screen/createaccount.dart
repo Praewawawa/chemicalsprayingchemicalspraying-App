@@ -75,13 +75,17 @@ Future<void> registerAndLogin() async {
 
           // ✅ ส่ง OTP เพื่อยืนยัน email
           await ApiService.post('/otp/create-otp', {
-            "email": _emailController.text.trim(),
-            "purpose": "register"
-          });
+          "email": _emailController.text.trim(),"purpose": "register"});
 
-          context.router.push(
-            OTPVerificationRoute(email: _emailController.text.trim(), purpose: 'register')
-          );
+        context.router.replace(
+          OTPLoginRoute(
+            email: _emailController.text.trim(),
+            purpose: 'register',
+          ),
+        );
+
+
+
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Login ล้มเหลว: ${loginResponse.body}")),
@@ -339,9 +343,14 @@ Future<void> registerAndLogin() async {
                                         ElevatedButton(
                                           onPressed: () {
                                             Navigator.pop(context);
+                                            
                                             context.router.replace(
-                                              OTPLoginRoute(email: _emailController.text.trim()),
+                                              OTPLoginRoute(
+                                              email: _emailController.text.trim(),
+                                              purpose: 'register', // หรือ 'login' ขึ้นอยู่กับว่าใช้ในหน้าใด
+                                            ),
                                             );
+                                          // context.router.pushNamed('/otp-login');
                                           },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: mainColor,

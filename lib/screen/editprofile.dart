@@ -58,19 +58,26 @@ Future<void> fetchUserData() async {
   final userId = prefs.getInt('user_id');
   if (userId == null) return;
 
-  final response = await ApiService.get('/users/$userId');
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
+  try {
+    final data = await ApiService.get('/users/$userId');
+
     setState(() {
-      nameController.text = data['name'];
-      emailController.text = data['email'];
-      phoneController.text = data['phone'];
-      selectedGender = data['gender'];
+      nameController.text = data['name'] ?? '';
+      emailController.text = data['email'] ?? '';
+      phoneController.text = data['phone'] ?? '';
+      selectedGender = data['gender'] ?? 'หญิง';
+
+      final avatarPath = data['avatar_url'];
+      if (avatarPath != null && avatarPath.toString().isNotEmpty) {
+        prefs.setString('profile_image', avatarPath);
+        _imageFile = File(avatarPath); // ✅ ถ้าใช้ไฟล์ local
+      }
     });
-  } else {
-    print('❌ ไม่สามารถโหลดข้อมูลผู้ใช้');
+  } catch (e) {
+    print('❌ โหลดข้อมูลล้มเหลว: $e');
   }
 }
+
 
   
 // ✅ ฟังก์ชันอัปเดตโปรไฟล์
@@ -78,6 +85,9 @@ Future<void> fetchUserData() async {
   try {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('user_id'); // ✅ ดึง user_id ที่ login แล้วเซฟไว้ตอน login
+    if (_imageFile != null) {
+  await prefs.setString('profile_image', _imageFile!.path);
+}
 
     if (userId == null) {
       throw Exception('ไม่พบ user_id');
@@ -97,8 +107,9 @@ Future<void> fetchUserData() async {
     await prefs.setString('profile_phone', phoneController.text);
     await prefs.setString('profile_gender', selectedGender);
     if (_imageFile != null) {
-      await prefs.setString('profile_image', _imageFile!.path);
-    }
+    await prefs.setString('profile_image', _imageFile!.path);
+  }
+
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('บันทึกข้อมูลสำเร็จ ✅')),

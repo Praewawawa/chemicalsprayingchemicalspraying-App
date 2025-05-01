@@ -24,16 +24,16 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
   Future<void> verifyOtp(BuildContext context, String otpCode) async {
     final response = await ApiService.post('/otp/verify-otp', {
-      "email": widget.email,
-      "purpose": widget.purpose,
-      "otp_code": otpCode
-    });
+    "email": widget.email,
+    "purpose": widget.purpose,
+    "otp_code": otpCode
+  });
 
-    if (response.statusCode == 200) {
-      context.router.push(ResetPasswordRoute(email: widget.email));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("ยืนยัน OTP สำเร็จ")),
-      );
+  if (response.statusCode == 200) {
+    context.router.push(ResetPasswordRoute(email: widget.email));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("ยืนยัน OTP สำเร็จ")),
+    );
     } else if (response.statusCode == 400) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("OTP หมดอายุ กรุณาขอ OTP ใหม่")),
@@ -53,18 +53,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     } else if (response.statusCode == 404) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("ไม่พบข้อมูล OTP กรุณาขอ OTP ใหม่")),
-      );
-    } else if (response.statusCode == 429) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("กรุณารอสักครู่ก่อนขอ OTP ใหม่")),
-      );
-    } else if (response.statusCode == 422) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("OTP ไม่ถูกต้อง กรุณาลองใหม่")),
-      );
-    } else if (response.statusCode == 403) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("OTP ถูกใช้แล้ว กรุณาขอ OTP ใหม่")),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

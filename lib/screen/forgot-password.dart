@@ -5,6 +5,8 @@ import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/components/app_button.dart';
 import 'package:chemicalspraying/constants/colors.dart';
 import 'package:chemicalspraying/services/api_service.dart';
+import 'dart:convert';
+
 
 @RoutePage(name: 'ForgotPasswordRoute')
 class ForgotPassword extends StatefulWidget {
@@ -20,42 +22,42 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 
 
 
-  Future<void> sendOtpForReset() async {
+Future<void> sendOtpForReset() async {
+  final email = _emailController.text.trim();
 
+  if (email.isEmpty || !email.contains('@')) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("กรุณาใส่อีเมลที่ถูกต้อง")),
+    );
+    return;
+  }
 
-
-    final email = _emailController.text.trim();
-
-    if (email.isEmpty || !email.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("กรุณาใส่อีเมลที่ถูกต้อง")),
-      );
-      return;
-    }
-
-    try {
-      final response = await ApiService.post('/otp/create-otp', {
+  try {
+    final rawResponse = await ApiService.post('/otp/create-otp', {
       "email": email,
       "purpose": "reset"
     });
 
-    // ไม่ต้อง .body ถ้า response เป็น Map อยู่แล้ว
-    if (response['message'].toString().contains('OTP')) {
-    context.router.push(
-      OTPVerificationRoute(email: email, purpose: 'reset'),
-    );
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("ไม่สามารถส่ง OTP ได้: ${response['message']}")),
-    );
-  }
+    final response = jsonDecode(rawResponse.body); // ✅ แปลง body เป็น JSON
 
-        } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("เกิดข้อผิดพลาดในการส่ง OTP")),
-          );
-        }
+    if (response['message'] != null &&
+        response['message'].toString().toLowerCase().contains('otp')) {
+      context.router.push(
+        OTPLoginRoute(email: email, purpose: 'reset'),
+      );
+    } else {
+      final errorMsg = response['message']?.toString() ?? "ไม่สามารถส่ง OTP ได้";
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("ไม่สามารถส่ง OTP ได้: $errorMsg")),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("เกิดข้อผิดพลาดในการส่ง OTP")),
+    );
   }
+}
+
 
   @override
   void dispose() {

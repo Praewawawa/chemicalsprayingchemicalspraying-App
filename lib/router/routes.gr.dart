@@ -119,6 +119,7 @@ abstract class $AppRouter extends _i19.RootStackRouter {
         child: _i14.OTPLoginPage(
           key: args.key,
           email: args.email,
+          purpose: args.purpose,
         ),
       );
     },
@@ -346,12 +347,14 @@ class OTPLoginRoute extends _i19.PageRouteInfo<OTPLoginRouteArgs> {
   OTPLoginRoute({
     _i20.Key? key,
     required String email,
+    required String purpose,
     List<_i19.PageRouteInfo>? children,
   }) : super(
           OTPLoginRoute.name,
           args: OTPLoginRouteArgs(
             key: key,
             email: email,
+            purpose: purpose,
           ),
           initialChildren: children,
         );
@@ -366,15 +369,18 @@ class OTPLoginRouteArgs {
   const OTPLoginRouteArgs({
     this.key,
     required this.email,
+    required this.purpose,
   });
 
   final _i20.Key? key;
 
   final String email;
 
+  final String purpose;
+
   @override
   String toString() {
-    return 'OTPLoginRouteArgs{key: $key, email: $email}';
+    return 'OTPLoginRouteArgs{key: $key, email: $email, purpose: $purpose}';
   }
 }
 

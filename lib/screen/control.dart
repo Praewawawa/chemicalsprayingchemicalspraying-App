@@ -7,8 +7,6 @@ import 'package:chemicalspraying/constants/colors.dart';
 import 'package:http/http.dart' as http;
 import '../router/routes.gr.dart';
 import 'dart:convert';
-import 'package:chemicalspraying/services/api_service.dart'; // ✅ เพิ่ม
-
 
 @RoutePage(name: 'ControlRoute')
 class ControlScreen extends StatefulWidget {
@@ -31,37 +29,10 @@ class _ControlScreenState extends State<ControlScreen> {
     ProfileRoute(),
   ];
 
-// ✅ ฟังก์ชันตั้งค่าโหมด
-  Future<void> setControlMode(String mode) async {
-  try {
-    await ApiService.post('/control', {
-      "device_id": 1, // เปลี่ยนเป็น device จริง
-      "mode": mode,
-    });
-    print('✅ ตั้งค่าโหมดสำเร็จ: $mode');
-  } catch (e) {
-    print('❌ ตั้งค่าโหมดล้มเหลว: $e');
-  }
-}
-
-// ✅ ฟังก์ชันดึงโหมดปัจจุบัน
-Future<void> getControlMode() async {
-  try {
-    final data = await ApiService.get('/control/1'); // เปลี่ยน device_id
-    setState(() {
-      isCustomMode = (data['mode'] == "Auto");
-    });
-    print('🎛 โหมดปัจจุบัน: ${data['mode']}');
-  } catch (e) {
-    print('❌ ดึงโหมดล้มเหลว: $e');
-  }
-}
-
-
   // ✅ ส่งคำสั่ง HTTP ไปยัง Flask Server
   Future<void> sendCommand(String command) async {
     print('👉 ส่ง: $command');
-    final url = Uri.parse('http://192.168.46.46:5000/control'); // ปรับตาม IP จริง
+    final url = Uri.parse('http://192.168.137.95:5000/control');
     try {
       final response = await http.post(
         url,
@@ -71,29 +42,56 @@ Future<void> getControlMode() async {
       if (response.statusCode == 200) {
         print('✅ สำเร็จ: $command');
       } else {
-        print('❌ ล้มเหลว: ${response.statusCode} - ${response.body}');
+        print('❌ ล้มเหลว: ${response.statusCode}');
+        showErrorDialog('server error: ${response.statusCode}');
       }
     } catch (e) {
       print('❗ error: $e');
+      showErrorDialog('ไม่สามารถเชื่อมต่อกับ server: $e');
     }
   }
 
-  void sendArm() => sendCommand("ARM");  // ใช้คำสั่ง "ARM" แทน "arm"
-  void sendDisarm() => sendCommand("DISARM");  // ใช้คำสั่ง "DISARM"
+  // ฟังก์ชันในการแสดง error dialog
+  void showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
+  // ฟังก์ชัน ARM และ DISARM
+  void sendArm() => sendCommand("arm");
+  void sendDisarm() => sendCommand("disarm");
+
+  // การเริ่มต้นการส่งคำสั่ง
   void _startSendingCommand(String command) {
     sendCommand(command); // ส่งทันทีรอบแรก
     _holdTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
-      sendCommand(command);
+      sendCommand(command); // ส่งซ้ำทุกๆ 200ms ถ้ายังกดค้างอยู่
     });
   }
 
+  // หยุดการส่งคำสั่ง
   void _stopSendingCommand() {
     _holdTimer?.cancel();
     _holdTimer = null;
-    sendCommand("stop");
+    sendCommand("stop"); // ส่งคำสั่ง stop เมื่อปล่อยปุ่ม
   }
 
+  // การเปลี่ยนหน้าใน BottomNavigationBar
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -118,16 +116,12 @@ Future<void> getControlMode() async {
             padding: const EdgeInsets.only(right: 16.0),
             child: CupertinoSwitch(
               value: isCustomMode,
-              onChanged: (value) async {
-              setState(() => isCustomMode = value);
-
-              await setControlMode(value ? "Auto" : "Manual"); // ✅ อัปเดตโหมดไป Node.js
-
-              if (value) {
-                context.router.replace(const ControlwaypointRoute());
-              }
-            },
-
+              onChanged: (value) {
+                setState(() => isCustomMode = value);
+                if (value) {
+                  context.router.replace(const ControlwaypointRoute());
+                }
+              },
               activeColor: Colors.green,
               thumbColor: Colors.white,
               trackColor: Colors.black12,

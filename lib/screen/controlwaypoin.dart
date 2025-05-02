@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/constants/colors.dart'; // <-- เปลี่ยนให้ตรงกับที่เก็บสีในโปรเจกต์ของคุณ
@@ -20,11 +21,18 @@ class ControlwaypoinPage extends StatefulWidget {
   // <-- เปลี่ยนชื่อ widget
 }
 
-class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
-  int _selectedIndex = 1; // index ให้ตรงกับ bottom nav
-  List<LatLng> waypoints = [];
 
-  // ---- 1. เพิ่มจุด ----
+class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
+  int _selectedIndex = 1;
+  List<LatLng> waypoints = [];
+  LatLng? currentPosition;
+  int currentWaypointIndex = 0;
+  
+
+
+  
+// ---- เพิ่มจุดมาร์ก waypoint ----
+
   void _addWaypoint(LatLng point) {
     setState(() {
       waypoints.add(point);
@@ -35,6 +43,26 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
   void _removeWaypoint(int index) {
     setState(() {
       waypoints.removeAt(index);
+    });
+  }
+
+  
+  void startVehicleSimulation() {
+    if (waypoints.isEmpty) return;
+
+    currentWaypointIndex = 0;
+
+    Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (currentWaypointIndex >= waypoints.length) {
+        timer.cancel();
+        return;
+      }
+
+      setState(() {
+        currentPosition = waypoints[currentWaypointIndex];
+      });
+
+      currentWaypointIndex++;
     });
   }
 
@@ -112,35 +140,67 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
                 urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 subdomains: ['a', 'b', 'c'],
               ),
-              // --------- Polyline ---------
+              
+              // --------- Polyline สีเขียว-เทา ---------
               PolylineLayer(
                 polylines: [
                   Polyline(
-                    points: waypoints,
+                    points: waypoints.sublist(0, currentWaypointIndex.clamp(0, waypoints.length)),
+                    strokeWidth: 3,
+                    color: Colors.grey,
+                  ),
+                  Polyline(
+                    points: waypoints.sublist(currentWaypointIndex.clamp(0, waypoints.length)),
                     strokeWidth: 3,
                     color: Colors.green,
                   ),
                 ],
               ),
-              // --------- Markers ---------
+  
+              
+              // --------- Markers Waypoints ---------
+
               MarkerLayer(
-                markers: waypoints.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  LatLng point = entry.value;
-                  return Marker(
-                    point: point,
-                    width: 40,
-                    height: 40,
-                    child: GestureDetector(
-                      onLongPress: () => _removeWaypoint(index),
-                      child: const Icon(Icons.location_on, color: Colors.green, size: 40),
+            markers: [
+              if (currentPosition != null)
+                Marker(
+                  point: currentPosition!,
+                  width: 40,
+                  height: 40,
+                  child: const Icon(Icons.directions_car, color: Colors.blue, size: 36),
+                ),
+              ...waypoints.asMap().entries.map((entry) {
+                int index = entry.key;
+                LatLng point = entry.value;
+                return Marker(
+                  point: point,
+                  width: 40,
+                  height: 40,
+                  child: GestureDetector(
+                    onLongPress: () => _removeWaypoint(index),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const Icon(Icons.location_on, color: Colors.green, size: 40),
+                        Text(
+                          '${index + 1}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                }).toList(),
-              ),
+                  ),
+                );
+              }).toList(),
             ],
           ),
-        ),
+                  ],
+                ),
+              ),  
+
         // --------- Info ---------
         Container(
           padding: const EdgeInsets.all(8),
@@ -179,7 +239,10 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
             const SizedBox(width: 8),
             Expanded(
               child: ElevatedButton(
-                onPressed: sendWaypointsToServer,
+                onPressed: () {
+                  sendWaypointsToServer();
+                  startVehicleSimulation();
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: mainColor,
                   minimumSize: const Size(60, 40),
@@ -226,3 +289,4 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
     );
   }
 }
+

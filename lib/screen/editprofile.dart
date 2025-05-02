@@ -65,6 +65,7 @@ Future<void> fetchUserData() async {
       nameController.text = data['name'] ?? '';
       emailController.text = data['email'] ?? '';
       phoneController.text = data['phone'] ?? '';
+      passwordController.text = data['password'] ?? '';
       selectedGender = data['gender'] ?? 'หญิง';
 
       final avatarPath = data['avatar_url'];
@@ -105,6 +106,7 @@ Future<void> fetchUserData() async {
     await prefs.setString('profile_name', nameController.text);
     await prefs.setString('profile_email', emailController.text);
     await prefs.setString('profile_phone', phoneController.text);
+    await prefs.setString('profile_password', passwordController.text);
     await prefs.setString('profile_gender', selectedGender);
     if (_imageFile != null) {
     await prefs.setString('profile_image', _imageFile!.path);
@@ -254,7 +256,9 @@ Future<void> fetchUserData() async {
                   controller: passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
-                    hintText: 'Password (หากต้องการเปลี่ยน)',
+                    labelText: 'รหัสผ่าน',
+                      labelStyle: const TextStyle(color: grayColor, fontSize: 16),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),

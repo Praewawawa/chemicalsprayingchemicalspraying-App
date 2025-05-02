@@ -294,7 +294,7 @@ class DistanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _buildCardmin(
-      title: "เส้นทางการทำงาน",
+      title: "ระยะในการทำงานที่เหลือ",
       child: SizedBox(
         height: 160,
         child: Row(

@@ -1,5 +1,5 @@
 // screen/setting.dart
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import '../router/routes.gr.dart';
 import '../constants/colors.dart';
@@ -194,4 +194,4 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
       ),
     );
   }
-}
+}*/

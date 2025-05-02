@@ -24,7 +24,6 @@ class _ControlScreenState extends State<ControlScreen> {
   final List<PageRouteInfo> _routes = [
     AddprofileRoute(),
     ControlRoute(),
-    NotificationSettingRoute(),
     NotificationRoute(),
     ProfileRoute(),
   ];
@@ -181,10 +180,6 @@ class _ControlScreenState extends State<ControlScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.sensors),
             label: 'ควบคุม',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            label: 'ตั้งค่า',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications_outlined),

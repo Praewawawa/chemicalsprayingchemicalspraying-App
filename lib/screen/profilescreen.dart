@@ -5,6 +5,11 @@ import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
+
+
+typedef PageRouteInfoList = List<PageRouteInfo>;
 
 @RoutePage(name: 'ProfileRoute')
 class ProfilePage extends StatefulWidget {
@@ -18,12 +23,12 @@ class _ProfilePageState extends State<ProfilePage> {
   String _name = '';
   String _email = '';
   File? _profileImage;
-  int _selectedIndex = 4;
+  Uint8List? _avatarBytes;
+  int _selectedIndex = 3;
 
-  final List<PageRouteInfo> _routes = [
+  final PageRouteInfoList _routes = [
     AddprofileRoute(),
     ControlRoute(),
-    NotificationSettingRoute(),
     NotificationRoute(),
     ProfileRoute(),
   ];
@@ -39,9 +44,15 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       _name = prefs.getString('profile_name') ?? 'ชื่อของคุณ';
       _email = prefs.getString('profile_email') ?? 'อีเมลของคุณ';
+
       final imagePath = prefs.getString('profile_image');
       if (imagePath != null) {
         _profileImage = File(imagePath);
+      }
+
+      final avatarBase64 = prefs.getString('avatar_base64');
+      if (avatarBase64 != null && avatarBase64.isNotEmpty) {
+        _avatarBytes = base64Decode(avatarBase64);
       }
     });
   }
@@ -86,17 +97,20 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           Column(
             children: [
-            const SizedBox(height: 20),
-            CircleAvatar(
-              radius: 70,
-              backgroundImage: _profileImage != null
-                  ? FileImage(_profileImage!) //
-                  : const AssetImage('assets/image/15.png') as ImageProvider,
-            ),
-            const SizedBox(height: 10),
-            Text(_name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 5),
-            Text(_email, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+              const SizedBox(height: 20),
+              CircleAvatar(
+                radius: 70,
+                backgroundColor: Colors.grey[200],
+                backgroundImage: _avatarBytes != null
+                    ? MemoryImage(_avatarBytes!)
+                    : _profileImage != null
+                        ? FileImage(_profileImage!)
+                        : const AssetImage('lib/assets/image/15.png') as ImageProvider,
+              ),
+              const SizedBox(height: 10),
+              Text(_name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 5),
+              Text(_email, style: const TextStyle(fontSize: 16, color: Colors.grey)),
               const SizedBox(height: 20),
               SizedBox(
                 width: 200,
@@ -216,10 +230,6 @@ class _ProfilePageState extends State<ProfilePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.sensors),
             label: 'ควบคุม',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            label: 'ตั้งค่า',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications_outlined),

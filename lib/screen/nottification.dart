@@ -54,11 +54,10 @@ class _NotificationPageState extends State<NotificationPage>
   List<NotificationItem> notifications = [];
   late TabController _tabController;
 
-  int _selectedIndex = 3; // index ของหน้า แจ้งเตือน
+  int _selectedIndex = 2; // index ของหน้า แจ้งเตือน
   final List<PageRouteInfo> _routes = const [
     AddprofileRoute(),
     ControlRoute(),
-    NotificationSettingRoute(),
     NotificationRoute(),
     ProfileRoute(),
   ];
@@ -246,10 +245,6 @@ class _NotificationPageState extends State<NotificationPage>
           BottomNavigationBarItem(
             icon: Icon(Icons.sensors),
             label: 'ควบคุม',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            label: 'ตั้งค่า',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications_outlined),

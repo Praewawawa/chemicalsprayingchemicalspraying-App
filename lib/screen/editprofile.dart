@@ -24,7 +24,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  
 
   String selectedGender = 'หญิง'; // default
   final List<String> genderOptions = ['ชาย', 'หญิง', 'อื่นๆ'];
@@ -65,7 +65,6 @@ Future<void> fetchUserData() async {
       nameController.text = data['name'] ?? '';
       emailController.text = data['email'] ?? '';
       phoneController.text = data['phone'] ?? '';
-      passwordController.text = data['password'] ?? '';
       selectedGender = data['gender'] ?? 'หญิง';
 
       final avatarPath = data['avatar_url'];
@@ -82,36 +81,37 @@ Future<void> fetchUserData() async {
 
   
 // ✅ ฟังก์ชันอัปเดตโปรไฟล์
-    Future<void> updateProfile() async {
+  Future<void> updateProfile() async {
   try {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt('user_id'); // ✅ ดึง user_id ที่ login แล้วเซฟไว้ตอน login
-    if (_imageFile != null) {
-  await prefs.setString('profile_image', _imageFile!.path);
-}
-
+    final userId = prefs.getInt('user_id');
     if (userId == null) {
       throw Exception('ไม่พบ user_id');
     }
 
-    await ApiService.put('/users/update/$userId', {
+    String? base64Image;
+    if (_imageFile != null) {
+      final bytes = await _imageFile!.readAsBytes();
+      base64Image = base64Encode(bytes);
+      await prefs.setString('profile_image', _imageFile!.path); // ยังเก็บ local path ไว้
+    }
+
+    // 🔁 ส่ง base64 ไปพร้อมข้อมูลอื่น
+    final body = {
       "name": nameController.text,
       "email": emailController.text,
       "phone": phoneController.text,
       "gender": selectedGender,
-      "password": passwordController.text.isNotEmpty ? passwordController.text : null,
-    });
+      if (base64Image != null) "avatar_base64": base64Image,
+    };
 
-    // ✅ Update local profile
+    await ApiService.put('/users/update/$userId', body);
+
+    // ✅ Save local
     await prefs.setString('profile_name', nameController.text);
     await prefs.setString('profile_email', emailController.text);
     await prefs.setString('profile_phone', phoneController.text);
-    await prefs.setString('profile_password', passwordController.text);
     await prefs.setString('profile_gender', selectedGender);
-    if (_imageFile != null) {
-    await prefs.setString('profile_image', _imageFile!.path);
-  }
-
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('บันทึกข้อมูลสำเร็จ ✅')),
@@ -124,6 +124,7 @@ Future<void> fetchUserData() async {
     );
   }
 }
+
 
   @override
   Widget build(BuildContext context) {
@@ -251,20 +252,7 @@ Future<void> fetchUserData() async {
                 ),
                 const SizedBox(height: 16),
 
-                // ✅ ช่อง Password
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'รหัสผ่าน',
-                      labelStyle: const TextStyle(color: grayColor, fontSize: 16),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-                const SizedBox(height: 24),
+
 
                 // Save Button
                 SizedBox(

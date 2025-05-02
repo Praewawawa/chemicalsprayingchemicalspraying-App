@@ -35,26 +35,40 @@ class _OTPLoginPageState extends State<OTPLoginPage> {
 
 Future<void> sendOtpToEmail() async {
   try {
-    final raw = await ApiService.post('/otp/create-otp', {
+    final response = await ApiService.post('/otp/create-otp', {
       "email": widget.email,
-      "purpose": "register"
+      "purpose": widget.purpose  // ✅ ดึงค่าจากตัวแปรที่กำหนดมาตอนเรียกหน้า
     });
 
-    final response = jsonDecode(raw.body); // ✅ แปลง body เป็น Map
+        if (response.statusCode == 200) {
+        context.router.replace(
+        ResetPasswordRoute(email: widget.email),
+      );  
+      final body = jsonDecode(response.body);
+      final message = body['message']?.toString() ?? 'ส่ง OTP ใหม่แล้ว';
 
-    final message = response is Map && response['message'] != null
-        ? response['message'].toString()
-        : 'ส่ง OTP ใหม่แล้ว';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+        
+      );
+      
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    } else {
+      print("⚠️ ไม่ใช่ 200: ${response.statusCode}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ส่ง OTP ไม่สำเร็จ: ${response.statusCode}')),
+      );
+    }
+
+
   } catch (e) {
+    print("❌ OTP resend error: $e");
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('ส่ง OTP ไม่สำเร็จ')),
     );
   }
 }
+
 
 
 
@@ -147,40 +161,53 @@ Future<void> sendOtpToEmail() async {
                   return;
                 }
 
-                final success = await ApiService.verifyOtp(widget.email, otpCode);
+                final success = await ApiService.verifyOtp(widget.email, otpCode, widget.purpose);
+
                 if (success) {
-                  // ✅ แสดง dialog
-                  await showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) => AlertDialog(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-                      content: SizedBox(
-                        width: 260,
-                        height: 360,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.verified, color: mainColor, size: 150),
-                            SizedBox(height: 20),
-                            Text(
-                              "สมัครสมาชิกสำเร็จ",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
+                final successMessage = widget.purpose == 'reset'
+                    ? 'ยืนยัน OTP สำเร็จ'
+                    : 'สมัครสมาชิกสำเร็จ';
+
+                await showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => AlertDialog(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+                    content: SizedBox(
+                      width: 260,
+                      height: 360,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.verified, color: mainColor, size: 150),
+                          const SizedBox(height: 20),
+                          Text(
+                            successMessage,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     ),
-                  );
+                  ),
+                );
 
-                  // ✅ รอแล้วเปลี่ยนหน้า
-                  await Future.delayed(const Duration(seconds: 2));
-                  if (context.mounted) {
-                    Navigator.of(context).pop(); // ปิด dialog
-                    context.router.replaceNamed('/login'); // ไปหน้า login
+                await Future.delayed(const Duration(seconds: 1));
+
+                if (context.mounted) {
+                  Navigator.of(context).pop(); // ปิด dialog
+
+                  if (widget.purpose == 'reset') {
+                    print ("🔑 OTPLoginPage: ${widget.purpose}");
+                    context.router.replace(
+                      ResetPasswordRoute(email: widget.email),
+                       // ✅ ไป reset password
+                    );
+                  } else {
+                    context.router.replaceNamed('/login'); 
                   }
                 }
+              }
               },
             ),
           ],

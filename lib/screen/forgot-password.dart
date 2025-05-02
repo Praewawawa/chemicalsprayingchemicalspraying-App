@@ -22,6 +22,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 
 
 
+// ✅ แก้เฉพาะฟังก์ชัน sendOtpForReset
+
 Future<void> sendOtpForReset() async {
   final email = _emailController.text.trim();
 
@@ -33,25 +35,25 @@ Future<void> sendOtpForReset() async {
   }
 
   try {
-    final rawResponse = await ApiService.post('/otp/create-otp', {
+    final response = await ApiService.post('/otp/create-otp', {
       "email": email,
       "purpose": "reset"
     });
 
-    final response = jsonDecode(rawResponse.body); // ✅ แปลง body เป็น JSON
+    final message = response['message']?.toString().toLowerCase();
 
-    if (response['message'] != null &&
-        response['message'].toString().toLowerCase().contains('otp')) {
+    if (message != null && (message.contains('otp') || message.contains('sent'))) {
       context.router.push(
         OTPLoginRoute(email: email, purpose: 'reset'),
       );
     } else {
-      final errorMsg = response['message']?.toString() ?? "ไม่สามารถส่ง OTP ได้";
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("ไม่สามารถส่ง OTP ได้: $errorMsg")),
+        SnackBar(content: Text("เกิดข้อผิดพลาด: ${response['message']}")),
       );
     }
+
   } catch (e) {
+    print("❌ OTP SEND ERROR: $e");
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("เกิดข้อผิดพลาดในการส่ง OTP")),
     );
@@ -59,9 +61,10 @@ Future<void> sendOtpForReset() async {
 }
 
 
+
   @override
   void dispose() {
-    _emailController.dispose();
+    _emailController.dispose(); 
     super.dispose();
   }
 

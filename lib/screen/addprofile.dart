@@ -20,7 +20,6 @@ class _AddprofilePageState extends State<AddprofilePage> {
   final List<PageRouteInfo> _routes = [
     AddprofileRoute(),
     const ControlRoute(),
-    const NotificationSettingRoute(),
     const NotificationRoute(),
     const ProfileRoute(),
   ];
@@ -90,7 +89,6 @@ class _AddprofilePageState extends State<AddprofilePage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'หน้าหลัก'),
           BottomNavigationBarItem(icon: Icon(Icons.sensors), label: 'ควบคุม'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: 'ตั้งค่า'),
           BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined), label: 'แจ้งเตือน'),
           BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'โปรไฟล์'),
         ],

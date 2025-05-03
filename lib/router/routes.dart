@@ -23,7 +23,6 @@ class AppRouter extends $AppRouter {
         AutoRoute(path: '/forgot-password', page: ForgotPasswordRoute.page),
         AutoRoute(path: '/otpverification', page: OTPVerificationRoute.page),
         AutoRoute(path: '/first', page: FirstRoute.page, initial: true),
-        AutoRoute(path: '/setting', page: NotificationSettingRoute.page),
         AutoRoute(path: '/resetpassword', page: ResetPasswordRoute.page),
         AutoRoute(path: '/otplogin', page: OTPLoginRoute.page),
 

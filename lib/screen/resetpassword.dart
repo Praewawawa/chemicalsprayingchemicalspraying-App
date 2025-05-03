@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/components/app_button.dart';
 import 'package:chemicalspraying/services/api_service.dart';
+import 'package:chemicalspraying/constants/colors.dart';
 
 @RoutePage(name: 'ResetPasswordRoute')
 class ResetPassword extends StatefulWidget {
@@ -53,6 +54,10 @@ class _ResetPasswordState extends State<ResetPassword> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: const BorderSide(color: mainColor, width: 2),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -64,6 +69,10 @@ class _ResetPasswordState extends State<ResetPassword> {
                   hintText: '********',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: const BorderSide(color: mainColor, width: 2),
                   ),
                 ),
               ),
@@ -87,13 +96,18 @@ class _ResetPasswordState extends State<ResetPassword> {
                       "password": password,
                     });
 
-                    if (response.statusCode == 200) {
-                      context.router.replaceNamed('/login');
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("เปลี่ยนรหัสผ่านไม่สำเร็จ: ${response.body}")),
-                      );
-                    }
+                    if (response['message'] == 'เปลี่ยนรหัสผ่านสำเร็จ') {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("เปลี่ยนรหัสผ่านสำเร็จ")),
+                    );
+                    await Future.delayed(const Duration(seconds: 1));
+                    if (!mounted) return;
+                    context.router.replaceNamed('/login');
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("เปลี่ยนรหัสผ่านไม่สำเร็จ: ${response['message']}")),
+                    );
+                  }
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("เกิดข้อผิดพลาด: $e")),

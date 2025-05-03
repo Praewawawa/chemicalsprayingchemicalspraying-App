@@ -37,6 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _loadProfileData();
+    
   }
 
   Future<void> _loadProfileData() async {

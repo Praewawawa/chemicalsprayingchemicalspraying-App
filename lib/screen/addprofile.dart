@@ -243,16 +243,16 @@ class BatteryCard extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // 🔋 ก้อนแบตเตอรี่แบ่งเป็น 5 ชิ้น
-                    for (int i = 0; i < 5; i++)
+                    // 🔋 ก้อนแบตเตอรี่แบ่งเป็น 5 ชิ้น จากล่างขึ้นบน
+                    for (int i in List.generate(5, (index) => index).reversed)
                       Container(
                         margin: const EdgeInsets.symmetric(vertical: 2),
                         height: 30,
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: (batteryLevel * 5).floor() > i
-                              ? const Color(0xFF40C947)
-                              : Colors.grey.shade300,
+                              ? const Color(0xFF40C947) // เขียวเมื่อมีแบต
+                              : Colors.grey.shade300,    // เทาเมื่อไม่มีแบต
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -275,6 +275,7 @@ class BatteryCard extends StatelessWidget {
     );
   }
 }
+
 class ChemicalCard extends StatelessWidget {
   const ChemicalCard({super.key});
 
@@ -320,10 +321,10 @@ class ChemicalCard extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    for (int i = 0; i < 5; i++)
+                    for (int i in List.generate(5, (index) => index).reversed)
                       Container(
                         margin: const EdgeInsets.symmetric(vertical: 2),
-                        height: 20,
+                        height: 25,
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: _getBlockColor(i, chemicalLevel),

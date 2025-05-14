@@ -17,8 +17,8 @@ class MqttService {
 
   late MqttServerClient client;
   double windSpeed = 0.0;
-  double battery = 10.0;
-  double chemical = 10.0;
+  double battery = 0.0;
+  double chemical = 0.0;
   bool waterLevel = false;
   Function()? onUpdate;
 

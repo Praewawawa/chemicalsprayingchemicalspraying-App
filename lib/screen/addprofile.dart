@@ -5,6 +5,8 @@ import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/constants/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'mqtt_service.dart';
+/*import 'package:wave/wave.dart';
+import 'package:wave/config.dart';*/
 
 @RoutePage(name: 'AddprofileRoute')
 class AddprofilePage extends StatefulWidget {
@@ -148,7 +150,7 @@ class _AddprofilePageState extends State<AddprofilePage> {
   }
 }
 
-class BatteryCard extends StatelessWidget {
+/*class BatteryCard extends StatelessWidget {
   const BatteryCard({super.key});
 
   @override
@@ -199,9 +201,198 @@ class BatteryCard extends StatelessWidget {
       ),
     );
   }
+}*/
+
+class BatteryCard extends StatelessWidget {
+  const BatteryCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    double batteryLevel = MqttService().battery / 100.0;
+    int batteryPercent = MqttService().battery.round();
+
+    return _buildCard(
+      title: "แบตเตอรี่",
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 130),
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            // หัวแบตด้านบน
+            Positioned(
+              top: 0,
+              child: Container(
+                width: 50,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Colors.green.shade100.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            // ตัวแบต
+            Positioned.fill(
+              child: Container(
+                margin: const EdgeInsets.only(top: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // 🔋 ก้อนแบตเตอรี่แบ่งเป็น 5 ชิ้น
+                    for (int i = 0; i < 5; i++)
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 2),
+                        height: 30,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: (batteryLevel * 5).floor() > i
+                              ? const Color(0xFF40C947)
+                              : Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    // เปอร์เซ็นต์ตรงกลาง
+                    Text(
+                      "$batteryPercent%",
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+class ChemicalCard extends StatelessWidget {
+  const ChemicalCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    double chemicalLevel = MqttService().chemical / 100.0;
+    int chemicalPercent = (chemicalLevel * 100).round();
+
+    return _buildCard(
+      title: "ปริมาณสารเคมี",
+      child: SizedBox(
+        width: 130,
+        height: 220,
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            // หัวถัง
+            Positioned(
+              top: 0,
+              child: Container(
+                width: 50,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Colors.green.shade100.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            // ตัวถัง
+            Positioned(
+              top: 10,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                margin: const EdgeInsets.only(top: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    for (int i = 0; i < 5; i++)
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 2),
+                        height: 20,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: _getBlockColor(i, chemicalLevel),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "$chemicalPercent%",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// กำหนดสีของ block ตามระดับ
+  Color _getBlockColor(int index, double level) {
+    if ((level * 5).floor() > index) {
+      return const Color(0xFF40C947); // สีเขียวเมื่อมีสาร
+    } else {
+      return Colors.grey.shade300; // สีเทาเมื่อไม่มี
+    }
+  }
+
+  Widget _buildCard({required String title, required Widget child}) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Colors.white,
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 16),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class ChemicalCard extends StatelessWidget {
+
+
+
+
+
+
+
+/*class ChemicalCard extends StatelessWidget {
   const ChemicalCard({super.key});
 
   @override
@@ -285,7 +476,7 @@ class ChemicalCard extends StatelessWidget {
       ),
     );
   }
-}
+}*/
 class DistanceCard extends StatelessWidget {
   const DistanceCard({super.key});
 

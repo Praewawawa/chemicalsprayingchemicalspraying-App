@@ -17,7 +17,8 @@ class MqttService {
 
   late MqttServerClient client;
   double windSpeed = 0.0;
-  double battery = 0.0;
+  double battery = 10.0;
+  double chemical = 10.0;
   bool waterLevel = false;
   Function()? onUpdate;
 
@@ -46,6 +47,7 @@ class MqttService {
       _subscribe("Wind", (msg) => _handleWind(msg));
       _subscribe("battery", (msg) => _handleBattery(msg));
       _subscribe("waterLevel", (msg) => _handleWaterLevel(msg));
+      _subscribe("chemical", (msg) => _handleChemical(msg));
     } else {
       client.disconnect();
     }
@@ -72,6 +74,11 @@ class MqttService {
 
   void _handleWaterLevel(String msg) {
     waterLevel = (msg == "full");
+    onUpdate?.call();
+  }
+
+  void _handleChemical(String msg) {
+    chemical = double.tryParse(msg) ?? 0.0;
     onUpdate?.call();
   }
 

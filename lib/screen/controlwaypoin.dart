@@ -1,107 +1,108 @@
 // screen/controlwaypoin.dart
-import 'dart:convert';
-import 'dart:io';
+import 'dart:async'; 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:mqtt_client/mqtt_client.dart' as mqtt;
+import 'package:auto_route/auto_route.dart';
+import 'package:chemicalspraying/router/routes.gr.dart';
+import 'package:chemicalspraying/constants/colors.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:chemicalspraying/services/api_service.dart';
+import 'package:chemicalspraying/screen/mqtt_service.dart';
 
-class WaypointMapTemplate extends StatefulWidget {
-  const WaypointMapTemplate({super.key});
+@RoutePage(name: 'ControlwaypointRoute')
+class ControlwaypoinPage extends StatefulWidget {
+  const ControlwaypoinPage({super.key});
 
   @override
-  State<WaypointMapTemplate> createState() => _WaypointMapTemplateState();
+  State<ControlwaypoinPage> createState() => _ControlwaypoinPageState();
 }
 
-class _WaypointMapTemplateState extends State<WaypointMapTemplate> {
+class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
+  int _selectedIndex = 1;
   List<LatLng> waypoints = [];
+  LatLng? currentPosition;
+  int currentWaypointIndex = 0;
 
-  // Add waypoint
+  String _statusMessage = '';
+  bool _isLoading = false;
+
+  final MqttService mqtt = MqttService();
+
   void _addWaypoint(LatLng point) {
     setState(() {
       waypoints.add(point);
     });
   }
 
-  // Remove waypoint
   void _removeWaypoint(int index) {
     setState(() {
       waypoints.removeAt(index);
     });
   }
 
-  // Save waypoints to file
-  Future<void> _saveWaypoints() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/waypoints.json');
-    final data = waypoints
-        .map((point) => {'lat': point.latitude, 'lon': point.longitude})
-        .toList();
-    await file.writeAsString(jsonEncode({'waypoints': data}));
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('บันทึกสำเร็จ')));
-  }
+  void startVehicleSimulation() {
+    if (waypoints.isEmpty) return;
 
-  // Load waypoints from file
-  Future<void> _loadWaypoints() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/waypoints.json');
-    if (!file.existsSync()) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('ไฟล์ไม่พบ')));
-      return;
-    }
-    final data = jsonDecode(await file.readAsString());
-    setState(() {
-      waypoints = List.from(data['waypoints'])
-          .map((e) => LatLng(e['lat'], e['lon']))
-          .toList();
+    currentWaypointIndex = 0;
+
+    Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (currentWaypointIndex >= waypoints.length) {
+        timer.cancel();
+        return;
+      }
+
+      setState(() {
+        currentPosition = waypoints[currentWaypointIndex];
+      });
+
+      currentWaypointIndex++;
     });
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('โหลดสำเร็จ')));
   }
 
-  // Publish waypoints via MQTT
-  Future<void> _publishWaypoints() async {
-    final client = mqtt.MqttClient('broker.hivemq.com', '');
-    client.logging(on: false);
-    client.port = 1883;
-    client.keepAlivePeriod = 20;
-    client.onDisconnected = () {
-      print('MQTT Disconnected');
-    };
+  Future<void> sendWaypointsToServerAndMqtt() async {
+    setState(() {
+      _isLoading = true;
+      _statusMessage = "กำลังส่งข้อมูล...";
+    });
 
     try {
-      await client.connect();
-    } catch (e) {
-      print('MQTT Connection failed: $e');
-      client.disconnect();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('เชื่อมต่อ MQTT ไม่สำเร็จ')),
+      for (LatLng point in waypoints) {
+        await ApiService.post(
+          '/gps',
+          {
+            "device_id": 1,
+            "lat": point.latitude,
+            "lng": point.longitude,
+            "timestamp": DateTime.now().toIso8601String()
+          },
+        );
+        mqtt.publishTargetPosition(point);
+      }
+
+      await ApiService.post(
+        '/control',
+        {
+          "device_id": 1,
+          "mode": "Auto"
+        },
       );
-      return;
+
+      mqtt.publishStartNavigation();
+
+      setState(() {
+        _statusMessage = "ส่ง Waypoints สำเร็จ";
+      });
+    } catch (e) {
+      print("❌ Error: $e");
+      setState(() {
+        _statusMessage = "เกิดข้อผิดพลาดในการส่งข้อมูล";
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-
-    final topic = 'chemicalspraying/waypoints';
-    final payload = jsonEncode({
-      'waypoints': waypoints
-          .map((p) => {'lat': p.latitude, 'lon': p.longitude})
-          .toList()
-    });
-
-    final builder = mqtt.MqttClientPayloadBuilder();
-    builder.addString(payload);
-
-    client.publishMessage(topic, mqtt.MqttQos.atLeastOnce, builder.payload!);
-    print('Published waypoints to $topic');
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('ส่ง Waypoints ไปยัง MQTT Broker เรียบร้อย')),
-    );
-
-    await Future.delayed(const Duration(seconds: 1));
-    client.disconnect();
   }
 
   @override
@@ -109,17 +110,24 @@ class _WaypointMapTemplateState extends State<WaypointMapTemplate> {
     return Scaffold(
       backgroundColor: const Color(0xFFF0FAFF),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        toolbarHeight: 70,
+        automaticallyImplyLeading: false,
+        title: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+          trailing: CupertinoSwitch(
+            value: true,
+            onChanged: (value) {
+              if (!value) {
+                context.router.replace(const ControlRoute());
+              }
+            },
+            activeColor: mainColor,
+            thumbColor: Colors.white,
+            trackColor: Colors.black12,
+          ),
         ),
-        title: const Text('Waypoint Map Template'),
-        actions: [
-          IconButton(onPressed: _saveWaypoints, icon: const Icon(Icons.save)),
-          IconButton(onPressed: _loadWaypoints, icon: const Icon(Icons.folder_open)),
-        ],
       ),
       body: Column(
         children: [
@@ -127,63 +135,174 @@ class _WaypointMapTemplateState extends State<WaypointMapTemplate> {
             child: FlutterMap(
               options: MapOptions(
                 initialCenter: LatLng(19.0332772, 99.89286762),
-                initialZoom: 13.0,
-                interactionOptions: const InteractionOptions(
-                  flags: ~InteractiveFlag.doubleTapZoom,
-                ),
-                onTap: (tapPosition, point) {
-                  _addWaypoint(point);
-                },
+                initialZoom: 16,
+                onTap: (tapPosition, point) => _addWaypoint(point),
               ),
               children: [
                 TileLayer(
                   urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                  subdomains: const ['a', 'b', 'c'],
+                  subdomains: ['a', 'b', 'c'],
                 ),
                 PolylineLayer(
                   polylines: [
-                    Polyline(points: waypoints, strokeWidth: 3, color: Colors.green),
+                    Polyline(
+                      points: waypoints.sublist(0, currentWaypointIndex.clamp(0, waypoints.length)),
+                      strokeWidth: 3,
+                      color: Colors.grey,
+                    ),
+                    Polyline(
+                      points: waypoints.sublist(currentWaypointIndex.clamp(0, waypoints.length)),
+                      strokeWidth: 3,
+                      color: Colors.green,
+                    ),
                   ],
                 ),
                 MarkerLayer(
-                  markers: waypoints.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    LatLng point = entry.value;
-                    return Marker(
-                      point: point,
-                      width: 40,
-                      height: 40,
-                      builder: (ctx) => GestureDetector(
-                        onLongPress: () => _removeWaypoint(index),
-                        child: const Icon(Icons.location_on, color: Colors.green, size: 40),
+                  markers: [
+                    if (currentPosition != null)
+                      Marker(
+                        point: currentPosition!,
+                        width: 40,
+                        height: 40,
+                        child: const Icon(Icons.directions_car, color: Colors.blue, size: 36),
                       ),
-                    );
-                  }).toList(),
+                    ...waypoints.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      LatLng point = entry.value;
+                      return Marker(
+                        point: point,
+                        width: 40,
+                        height: 40,
+                        child: GestureDetector(
+                          onLongPress: () => _removeWaypoint(index),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              const Icon(Icons.location_on, color: Colors.green, size: 40),
+                              Text(
+                                '${index + 1}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
                 ),
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF0FAFF),
+              border: Border(top: BorderSide(color: Colors.grey)),
+            ),
             child: Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                    onPressed: _publishWaypoints,
-                    child: const Text("ส่งไป Pi"),
+                  child: Text(
+                    "${waypoints.length} Waypoints  |  Lat ${waypoints.isNotEmpty ? waypoints.last.latitude.toStringAsFixed(6) : '-'}  |  Lon ${waypoints.isNotEmpty ? waypoints.last.longitude.toStringAsFixed(6) : '-'}",
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                    onPressed: () => setState(() => waypoints.clear()),
-                    child: const Text("ล้างทั้งหมด"),
+                const Text("Relay"),
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: 60,
+                  height: 30,
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                    ),
+                    controller: TextEditingController(text: "5000"),
                   ),
                 ),
               ],
             ),
+          ),
+
+          if (_statusMessage.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                _statusMessage,
+                style: TextStyle(
+                  color: _statusMessage.contains("สำเร็จ") ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: CircularProgressIndicator(),
+            ),
+
+          Row(
+            children: [
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          sendWaypointsToServerAndMqtt();
+                          startVehicleSimulation();
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: mainColor,
+                    minimumSize: const Size(60, 40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'เริ่ม',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          setState(() {
+                            waypoints.clear();
+                            _statusMessage = '';
+                          });
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey,
+                    minimumSize: const Size(60, 40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'ยกเลิก',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
           ),
         ],
       ),

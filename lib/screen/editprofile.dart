@@ -10,6 +10,8 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:flutter/services.dart';
+
 
 
 @RoutePage(name: 'EditProfileRoute')
@@ -28,6 +30,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   String selectedGender = 'หญิง'; // default
   final List<String> genderOptions = ['ชาย', 'หญิง', 'อื่นๆ'];
+
 
   XFile? _imageFile; // ✅ ตัวแปรเก็บรูปภาพ
   String? avatarBase64;
@@ -63,24 +66,35 @@ Future<void> fetchUserData() async {
     final data = await ApiService.get('/users/$userId');
 
     setState(() {
-      nameController.text = data['name'] ?? '';
-      emailController.text = data['email'] ?? '';
-      phoneController.text = data['phone'] ?? '';
-      selectedGender = data['gender'] ?? 'หญิง';
+  nameController.text = data['name'] ?? '';
+  emailController.text = data['email'] ?? '';
+  phoneController.text = data['phone'] ?? '';
 
-      // ✅ ถ้ามี base64 รูป ให้เก็บไว้แสดง
-      final avatar = data['avatar_url'];
-      if (avatar != null && avatar.toString().isNotEmpty) {
-        prefs.setString('avatar_base64', avatar);
-        avatarBase64 = avatar; // ✅ ใช้ตัวแปรใน class
-      } else {
-        avatarBase64 = prefs.getString('avatar_base64');
-      }
-    });
+  // 🔁 ปรับค่านี้ให้ match กับ dropdown
+  final genderFromServer = data['gender']?.toLowerCase() ?? 'หญิง';
+  if (genderFromServer.contains('ชาย')) {
+    selectedGender = 'ชาย';
+  } else if (genderFromServer.contains('หญิง')) {
+    selectedGender = 'หญิง';
+  } else {
+    selectedGender = 'อื่นๆ';
+  }
+
+  // ✅ ถ้ามี base64 รูป ให้เก็บไว้แสดง
+  final avatar = data['avatar_url'];
+  if (avatar != null && avatar.toString().isNotEmpty) {
+    prefs.setString('avatar_base64', avatar);
+    avatarBase64 = avatar;
+  } else {
+    avatarBase64 = prefs.getString('avatar_base64');
+  }
+});
   } catch (e) {
-    print('❌ โหลดข้อมูลล้มเหลว: $e');
+    print('❌ โหลดข้อมูลโปรไฟล์ล้มเหลว: $e');
   }
 }
+
+
 
 
 
@@ -198,6 +212,9 @@ Widget build(BuildContext context) {
               // Name
               TextField(
                 controller: nameController,
+                inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')), // อนุญาตเฉพาะ a-z A-Z 0-9
+                    ],
                 decoration: InputDecoration(
                   labelText: 'ชื่อ-นามสกุล',
                   filled: true,
@@ -229,6 +246,9 @@ Widget build(BuildContext context) {
                     flex: 2,
                     child: TextField(
                       controller: phoneController,
+                      inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')), // อนุญาตเฉพาะ a-z A-Z 0-9
+                    ],
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
                         hintText: 'เบอร์โทร',
@@ -245,6 +265,10 @@ Widget build(BuildContext context) {
               // Email
               TextField(
                 controller: emailController,
+                inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+              ],
+
                 decoration: InputDecoration(
                   hintText: 'Email',
                   filled: true,

@@ -6,6 +6,7 @@ import 'package:chemicalspraying/constants/colors.dart';
 import 'package:chemicalspraying/components/app_button.dart';
 import 'package:chemicalspraying/services/api_service.dart';
 import 'dart:convert';
+import 'package:flutter/services.dart';
 
 
 
@@ -96,6 +97,9 @@ Future<void> sendOtpToEmail() async {
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     maxLength: 1,
+                      inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly, // ✅ กรองเฉพาะตัวเลข
+                    ],
                     decoration: InputDecoration(
                       counterText: '',
                       enabledBorder: OutlineInputBorder(

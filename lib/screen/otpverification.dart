@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/components/app_button.dart';
 import 'package:chemicalspraying/services/api_service.dart'; // ✅ เพิ่ม
+import 'package:flutter/services.dart'; // ✅ เพิ่ม
 
 @RoutePage()
 class OTPVerificationScreen extends StatefulWidget {
@@ -92,6 +93,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     maxLength: 1,
+                      inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly, // ✅ กรองเฉพาะตัวเลข
+                    ],
                     decoration: InputDecoration(
                       counterText: '',
                       enabledBorder: OutlineInputBorder(

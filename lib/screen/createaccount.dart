@@ -8,6 +8,8 @@ import 'package:chemicalspraying/constants/colors.dart';
 import 'package:chemicalspraying/services/api_service.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
+
 
 
 @RoutePage(name: 'CreateAccountRoute')
@@ -147,20 +149,24 @@ Future<void> registerAndLogin() async {
 
                     // ชื่อบัญชี
                     TextField(
-                      controller: _usernameController,
-                      decoration: InputDecoration(
-                        labelText: 'ชื่อบัญชีผู้ใช้',
-                        labelStyle: const TextStyle(color: Colors.grey),
-                        border: OutlineInputBorder(
-                          borderSide: const BorderSide(color: mainColor),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: mainColor, width: 2),
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
+                    controller: _usernameController,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')), // อนุญาตเฉพาะ a-z A-Z 0-9
+                    ],
+                    decoration: InputDecoration(
+                      labelText: 'ชื่อบัญชีผู้ใช้',
+                      labelStyle: const TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: mainColor, width: 2),
+                        borderRadius: BorderRadius.circular(12.0),
                       ),
                     ),
+                  ),
+
 
                     const SizedBox(height: 10),
 
@@ -205,20 +211,25 @@ Future<void> registerAndLogin() async {
                           child: SizedBox(
                             height: 60,
                             child: TextField(
-                              controller: _phoneController,
-                              decoration: InputDecoration(
-                                labelText: 'เบอร์โทรศัพท์',
-                                labelStyle: const TextStyle(color: Colors.grey),
-                                border: OutlineInputBorder(
-                                  borderSide: const BorderSide(color: mainColor),
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(color: mainColor, width: 2),
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
+                            controller: _phoneController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly, // อนุญาตเฉพาะตัวเลข
+                            ],
+                            decoration: InputDecoration(
+                              labelText: 'เบอร์โทรศัพท์',
+                              labelStyle: const TextStyle(color: Colors.grey),
+                              border: OutlineInputBorder(
+                                borderSide: const BorderSide(color: mainColor),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(color: mainColor, width: 2),
+                                borderRadius: BorderRadius.circular(12.0),
                               ),
                             ),
+                          ),
+
                           ),
                         ),
                       ],
@@ -229,6 +240,10 @@ Future<void> registerAndLogin() async {
                     // อีเมล
                     TextField(
                       controller: _emailController,
+                      inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+                    ],
+
                       decoration: InputDecoration(
                         labelText: 'อีเมล',
                         labelStyle: const TextStyle(color: Colors.grey),
@@ -248,6 +263,9 @@ Future<void> registerAndLogin() async {
                     // รหัสผ่าน
                     TextField(
                       controller: _passwordController,
+                      inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')), // อนุญาตเฉพาะ a-z A-Z 0-9
+                    ],
                       obscureText: true,
                       decoration: InputDecoration(
                         labelText: 'รหัสผ่าน',
@@ -268,6 +286,9 @@ Future<void> registerAndLogin() async {
                     // ยืนยันรหัสผ่าน
                     TextField(
                       controller: _confirmPasswordController,
+                      inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')), // อนุญาตเฉพาะ a-z A-Z 0-9
+                    ],
                       obscureText: true,
                       decoration: InputDecoration(
                         labelText: 'ยืนยันรหัสผ่าน',

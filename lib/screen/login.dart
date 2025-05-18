@@ -7,6 +7,7 @@ import 'package:chemicalspraying/constants/colors.dart';
 import 'package:chemicalspraying/services/api_service.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart'; // ✅ เพิ่ม
 
 
 @RoutePage()
@@ -85,6 +86,10 @@ class _LoginPageState extends State<LoginPage> {
                         height: 70,
                         child: TextField(
                           controller: _emailController,
+                          inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+                        ],
+
                           decoration: InputDecoration(
                             labelText: 'อีเมล',
                             labelStyle: const TextStyle(color: grayColor, fontSize: 16),
@@ -112,6 +117,9 @@ class _LoginPageState extends State<LoginPage> {
                         height: 70,
                         child: TextField(
                           controller: _passwordController,
+                          inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')), // อนุญาตเฉพาะ a-z A-Z 0-9
+                    ],
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: 'รหัสผ่าน',

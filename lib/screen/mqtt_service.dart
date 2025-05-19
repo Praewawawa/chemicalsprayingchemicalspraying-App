@@ -66,6 +66,8 @@ class MqttService {
       _subscribe("chemical", _handleChemical);
       _subscribe("distance", _handleDistance);
       _subscribe("currentPosition", _handleCurrentPosition);
+      _subscribe("pump_lavel", _handleSprayStatus); // เพิ่มบรรทัดนี้หลังจากเชื่อมต่อสำเร็จ
+
     } else {
       client.disconnect();
     }
@@ -193,6 +195,14 @@ class MqttService {
       }
     }
   });
+}
+
+ValueNotifier<bool> sprayStatus = ValueNotifier(false);
+
+// ฟังก์ชันสำหรับ handle สถานะที่มาจาก topic "pump_lavel"
+void _handleSprayStatus(String msg) {
+  sprayStatus.value = msg.toUpperCase() == 'ON';
+  onUpdate?.call();
 }
 
 

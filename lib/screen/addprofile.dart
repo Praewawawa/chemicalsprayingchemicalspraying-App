@@ -432,29 +432,38 @@ class _SprayControlCardState extends State<SprayControlCard> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                isSprayOn ? "เปิด" : "ปิด",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                "สถานะ",
-                style: TextStyle(
-                  color: isSprayOn ? Colors.green : Colors.red,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              CupertinoSwitch(
-                value: isSprayOn,
-                onChanged: (value) {
-                  setState(() => isSprayOn = value);
-                  MqttService().publish('pump_lavel', isSprayOn ? 'ON' : 'OFF');
+              ValueListenableBuilder<bool>(
+                valueListenable: MqttService().sprayStatus,
+                builder: (context, isSprayOn, _) {
+                  return Column(
+                    children: [
+                      Text(
+                        isSprayOn ? "เปิด" : "ปิด",
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        "สถานะ",
+                        style: TextStyle(
+                          color: isSprayOn ? Colors.green : Colors.red,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      CupertinoSwitch(
+                        value: isSprayOn,
+                        onChanged: (value) {
+                          MqttService().sprayStatus.value = value;
+                          MqttService().publish('pump_lavel', value ? 'ON' : 'OFF');
+                        },
+                        activeColor: Colors.green,
+                        thumbColor: Colors.white,
+                        trackColor: Colors.black12,
+                      ),
+                    ],
+                  );
                 },
-                activeColor: Colors.green,
-                thumbColor: Colors.white,
-                trackColor: Colors.black12,
               ),
             ],
           ),
@@ -462,6 +471,26 @@ class _SprayControlCardState extends State<SprayControlCard> {
       ),
     );
   }
+
+  Widget _buildCardmin({required String title, required Widget child}) {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
+  
 }
 
 Widget _buildCard({required String title, required Widget child}) {

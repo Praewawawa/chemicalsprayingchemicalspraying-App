@@ -309,31 +309,7 @@ class ChemicalCard extends StatelessWidget {
     }
   }
 
-  Widget _buildCard({required String title, required Widget child}) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: Colors.white,
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 16),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
+ 
 }
 
 
@@ -471,27 +447,6 @@ class _SprayControlCardState extends State<SprayControlCard> {
       ),
     );
   }
-
-  Widget _buildCardmin({required String title, required Widget child}) {
-    return Card(
-      color: Colors.white,
-      elevation: 4,
-      margin: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            
-            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
   
 }
 
@@ -508,7 +463,7 @@ Widget _buildCard({required String title, required Widget child}) {
       children: [
         Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        SizedBox(height: 250, child: child), // เพิ่มความสูง
+        SizedBox(height: 230, child: child), // เพิ่มความสูง
       ],
     ),
   );

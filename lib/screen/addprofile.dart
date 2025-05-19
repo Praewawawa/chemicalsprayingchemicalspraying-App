@@ -474,6 +474,7 @@ class _SprayControlCardState extends State<SprayControlCard> {
 
   Widget _buildCardmin({required String title, required Widget child}) {
     return Card(
+      color: Colors.white,
       elevation: 4,
       margin: const EdgeInsets.all(16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -482,6 +483,7 @@ class _SprayControlCardState extends State<SprayControlCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            
             Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             child,

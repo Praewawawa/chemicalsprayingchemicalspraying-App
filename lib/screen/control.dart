@@ -31,7 +31,7 @@ class _ControlScreenState extends State<ControlScreen> {
   // ✅ ส่งคำสั่ง HTTP ไปยัง Flask Server
   Future<void> sendCommand(String command) async {
     print('👉 ส่ง: $command');
-    final url = Uri.parse('http://192.168.137.95:5000/control');
+    final url = Uri.parse('http://192.168.137.207:5000/control');
     try {
       final response = await http.post(
         url,

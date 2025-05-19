@@ -1,5 +1,6 @@
 // screen/controlwaypoin.dart
-import 'dart:async'; 
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -22,12 +23,23 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
   int _selectedIndex = 1;
   List<LatLng> waypoints = [];
   LatLng? currentPosition;
-  int currentWaypointIndex = 0;
-
+  final MqttService mqtt = MqttService();
   String _statusMessage = '';
   bool _isLoading = false;
 
-  final MqttService mqtt = MqttService();
+  @override
+void initState() {
+  super.initState();
+  initMqttAndListen();
+}
+
+void initMqttAndListen() async {
+  await mqtt.connect(); // ✅ เชื่อมต่อ MQTT ก่อน
+  listenToPixhawkPosition(); // ✅ แล้วค่อยเริ่มรับข้อมูลตำแหน่ง
+}
+
+
+  
 
   void _addWaypoint(LatLng point) {
     setState(() {
@@ -41,22 +53,20 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
     });
   }
 
-  void startVehicleSimulation() {
-    if (waypoints.isEmpty) return;
-
-    currentWaypointIndex = 0;
-
-    Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (currentWaypointIndex >= waypoints.length) {
-        timer.cancel();
-        return;
+  void listenToPixhawkPosition() {
+    mqtt.listen('pixhawk/gps', (message) {
+      try {
+        final data = jsonDecode(message);
+        final lat = data['lat'];
+        final lng = data['lng'];
+        if (lat != null && lng != null) {
+          setState(() {
+            currentPosition = LatLng(lat, lng);
+          });
+        }
+      } catch (e) {
+        print("❌ Failed to parse GPS data: $e");
       }
-
-      setState(() {
-        currentPosition = waypoints[currentWaypointIndex];
-      });
-
-      currentWaypointIndex++;
     });
   }
 
@@ -146,12 +156,7 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
                 PolylineLayer(
                   polylines: [
                     Polyline(
-                      points: waypoints.sublist(0, currentWaypointIndex.clamp(0, waypoints.length)),
-                      strokeWidth: 3,
-                      color: Colors.grey,
-                    ),
-                    Polyline(
-                      points: waypoints.sublist(currentWaypointIndex.clamp(0, waypoints.length)),
+                      points: waypoints,
                       strokeWidth: 3,
                       color: Colors.green,
                     ),
@@ -228,7 +233,6 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
               ],
             ),
           ),
-
           if (_statusMessage.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -240,13 +244,11 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
                 ),
               ),
             ),
-
           if (_isLoading)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
               child: CircularProgressIndicator(),
             ),
-
           Row(
             children: [
               const SizedBox(width: 8),
@@ -256,7 +258,6 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
                       ? null
                       : () {
                           sendWaypointsToServerAndMqtt();
-                          startVehicleSimulation();
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: mainColor,

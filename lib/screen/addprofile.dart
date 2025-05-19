@@ -5,6 +5,7 @@ import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:chemicalspraying/constants/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'mqtt_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 /*import 'package:wave/wave.dart';
 import 'package:wave/config.dart';*/
 
@@ -372,14 +373,38 @@ class SprayControlCard extends StatefulWidget {
 
 class _SprayControlCardState extends State<SprayControlCard> {
   bool isSprayOn = false;
-  int sprayLevel = 2;
+  int sprayLevel = 1; // เริ่มที่ 1 (หรือ 0 ถ้าอยากแสดง 0)
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSprayLevel();
+  }
+
+  Future<void> _loadSprayLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      sprayLevel = prefs.getInt('spray_level') ?? 1; // ค่า default เป็น 1
+    });
+  }
+
+  Future<void> _saveSprayLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('spray_level', sprayLevel);
+  }
 
   void _increaseLevel() {
-    if (sprayLevel < 3) setState(() => sprayLevel++);
+    if (sprayLevel < 3) {
+      setState(() => sprayLevel++);
+      _saveSprayLevel();
+    }
   }
 
   void _decreaseLevel() {
-    if (sprayLevel > 1) setState(() => sprayLevel--);
+    if (sprayLevel > 1) {
+      setState(() => sprayLevel--);
+      _saveSprayLevel();
+    }
   }
 
   @override

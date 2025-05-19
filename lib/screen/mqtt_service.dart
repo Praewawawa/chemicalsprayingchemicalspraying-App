@@ -180,4 +180,20 @@ class MqttService {
     final random = Random().nextInt(99999);
     return 'client-${formatter.format(now)}-$random';
   }
+
+  void listen(String topic, void Function(String) onMessage) {
+  client.subscribe(topic, MqttQos.atMostOnce);
+
+  client.updates?.listen((List<MqttReceivedMessage<MqttMessage>> messages) {
+    for (var message in messages) {
+      if (message.topic == topic) {
+        final recMess = message.payload as MqttPublishMessage;
+        final payload = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+        onMessage(payload);
+      }
+    }
+  });
+}
+
+
 }

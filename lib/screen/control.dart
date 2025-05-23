@@ -211,19 +211,22 @@ class _ControlScreenState extends State<ControlScreen> {
       child: child,
     );
   }
+  
 // ฟังก์ชันนี้ใช้สำหรับการสร้างปุ่มทิศทาง
 Widget _directionButton(IconData icon, String command) {
-  return InkWell(
-    onTapDown: (_) => _startSendingCommand(command),
-    onTapUp: (_) => _stopSendingCommand(),
-    onTapCancel: () => _stopSendingCommand(),
-    borderRadius: BorderRadius.circular(12),  // ให้ effect อยู่ในกรอบมุมโค้ง
-    child: Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(12),
+  return SizedBox(
+    width: 60,
+    height: 60,
+    child: ElevatedButton(
+      onPressed: () => _startSendingCommand(command),
+      onLongPress: () => _stopSendingCommand(), // ปล่อยเมื่อกดค้าง
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.grey[300],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: EdgeInsets.zero,
+        elevation: 4,
       ),
       child: Icon(icon, size: 28, color: Colors.black87),
     ),
@@ -232,27 +235,36 @@ Widget _directionButton(IconData icon, String command) {
 
 
 
+
   // สำหรับปุ่ม STOP
 Widget _stopButton() {
-  return InkWell(
-    onTap: () => sendCommand("stop"),
-    borderRadius: BorderRadius.circular(12), // ให้ ripple อยู่ในกรอบมุมโค้ง
-    child: Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        color: Colors.redAccent,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Center(
-        child: Text(
-          'STOP',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+  return SizedBox(
+    width: 60,
+    height: 60,
+    child: ElevatedButton(
+      onPressed: () => sendCommand("stop"),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.redAccent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
+        elevation: 4, // เพิ่มความนูนให้ดูเด่น
+        padding: EdgeInsets.zero, // ป้องกันไม่ให้ปุ่มขยายเกินขนาด
+      ),
+      child: const Text(
+        'STOP',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 14, // ปรับให้พอดีในปุ่มเล็ก
+        ),
+        textAlign: TextAlign.center,
       ),
     ),
   );
 }
+
+
 
 // สำหรับปุ่ม ARM และ DISARM
   Widget _actionButton(String label, Color color, void Function() onPressed) {

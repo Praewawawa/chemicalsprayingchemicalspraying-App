@@ -1,4 +1,4 @@
-// screen/addprofile.dart
+ // screen/addprofile.dart
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
@@ -141,7 +141,7 @@ class _AddprofilePageState extends State<AddprofilePage> {
                 const Text('N↑', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 Text(windSpeed.toStringAsFixed(2), style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
-                const Text('km/s', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const Text('m/s', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -393,14 +393,29 @@ class _SprayControlCardState extends State<SprayControlCard> {
           Column(
             children: [
               IconButton(
-                onPressed: _increaseLevel,
+               onPressed: () {
+                  _increaseLevel();
+                  MqttService().publishSprayLevel(sprayLevel);
+                },
                 icon: const Icon(Icons.arrow_drop_up, color: Colors.green, size: 30),
               ),
-              Text("ระดับที่ ${sprayLevel - 1}", style: const TextStyle(color: Colors.grey, fontSize: 14)),
-              Text("ระดับที่ $sprayLevel", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              Text("ระดับที่ ${sprayLevel + 1}", style: const TextStyle(color: Colors.grey, fontSize: 14)),
+              Text(
+                sprayLevel > 1 ? "ระดับที่ ${sprayLevel - 1}" : "",
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+              Text(
+                "ระดับที่ $sprayLevel",
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              Text(
+                sprayLevel < 3 ? "ระดับที่ ${sprayLevel + 1}" : "",
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+              ),
               IconButton(
-                onPressed: _decreaseLevel,
+                onPressed: () {
+                  _decreaseLevel(); // หรือเขียน setState(() => sprayLevel--)
+                  MqttService().publishSprayLevel(sprayLevel);
+                },
                 icon: const Icon(Icons.arrow_drop_down, color: Colors.green, size: 30),
               ),
             ],

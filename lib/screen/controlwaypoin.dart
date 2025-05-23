@@ -1,13 +1,12 @@
 // screen/controlwaypoin.dart
-import 'dart:async';
+import 'dart:async'; 
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:chemicalspraying/router/routes.gr.dart';
-import 'package:chemicalspraying/constants/colors.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:chemicalspraying/constants/colors.dart';
 import 'package:chemicalspraying/services/api_service.dart';
 import 'package:chemicalspraying/screen/mqtt_service.dart';
 
@@ -24,22 +23,39 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
   List<LatLng> waypoints = [];
   LatLng? currentPosition;
   final MqttService mqtt = MqttService();
+  final MapController _mapController = MapController();
   String _statusMessage = '';
   bool _isLoading = false;
+  StreamSubscription<LatLng?>? positionSubscription;
+
+  final TextEditingController relayController = TextEditingController(text: "5000");
 
   @override
-void initState() {
-  super.initState();
-  initMqttAndListen();
-}
+  void initState() {
+    super.initState();
+    initMqttAndListen();
+  }
 
-void initMqttAndListen() async {
-  await mqtt.connect(); // ✅ เชื่อมต่อ MQTT ก่อน
-  listenToPixhawkPosition(); // ✅ แล้วค่อยเริ่มรับข้อมูลตำแหน่ง
-}
+  @override
+  void dispose() {
+    positionSubscription?.cancel();
+    mqtt.disconnect();
+    relayController.dispose();
+    super.dispose();
+  }
 
+  void initMqttAndListen() async {
+    await mqtt.connect();
 
-  
+    positionSubscription = mqtt.currentPositionStream.listen((pos) {
+      if (pos != null) {
+        setState(() {
+          currentPosition = pos;
+        });
+        _mapController.move(pos, _mapController.camera.zoom);
+      }
+    });
+  }
 
   void _addWaypoint(LatLng point) {
     setState(() {
@@ -53,23 +69,6 @@ void initMqttAndListen() async {
     });
   }
 
-  void listenToPixhawkPosition() {
-    mqtt.listen('pixhawk/gps', (message) {
-      try {
-        final data = jsonDecode(message);
-        final lat = data['lat'];
-        final lng = data['lng'];
-        if (lat != null && lng != null) {
-          setState(() {
-            currentPosition = LatLng(lat, lng);
-          });
-        }
-      } catch (e) {
-        print("❌ Failed to parse GPS data: $e");
-      }
-    });
-  }
-
   Future<void> sendWaypointsToServerAndMqtt() async {
     setState(() {
       _isLoading = true;
@@ -78,6 +77,7 @@ void initMqttAndListen() async {
 
     try {
       for (LatLng point in waypoints) {
+        // ส่งข้อมูลไป server
         await ApiService.post(
           '/gps',
           {
@@ -87,17 +87,18 @@ void initMqttAndListen() async {
             "timestamp": DateTime.now().toIso8601String()
           },
         );
-        mqtt.publishTargetPosition(point);
+
+        // ส่ง waypoint ผ่าน MQTT ไป topic waypoint/control/target
+       mqtt.publishTargetPosition(point);
       }
 
-      await ApiService.post(
-        '/control',
-        {
-          "device_id": 1,
-          "mode": "Auto"
-        },
-      );
+      // สั่งเปลี่ยน mode เป็น Auto
+      await ApiService.post('/control', {
+        "device_id": 1,
+        "mode": "Auto"
+      });
 
+      // สั่งเริ่ม navigation ผ่าน MQTT
       mqtt.publishStartNavigation();
 
       setState(() {
@@ -130,7 +131,7 @@ void initMqttAndListen() async {
             value: true,
             onChanged: (value) {
               if (!value) {
-                context.router.replace(const ControlRoute());
+                context.router.replaceNamed('/control');
               }
             },
             activeColor: mainColor,
@@ -143,8 +144,9 @@ void initMqttAndListen() async {
         children: [
           Expanded(
             child: FlutterMap(
+              mapController: _mapController,
               options: MapOptions(
-                initialCenter: LatLng(19.0332772, 99.89286762),
+                initialCenter: currentPosition ?? LatLng(0.0, 0.0),
                 initialZoom: 16,
                 onTap: (tapPosition, point) => _addWaypoint(point),
               ),
@@ -169,7 +171,11 @@ void initMqttAndListen() async {
                         point: currentPosition!,
                         width: 40,
                         height: 40,
-                        child: const Icon(Icons.directions_car, color: Colors.blue, size: 36),
+                        child: const Icon(
+                          Icons.directions_car,
+                          color: Colors.blue,
+                          size: 36,
+                        ),
                       ),
                     ...waypoints.asMap().entries.map((entry) {
                       int index = entry.key;
@@ -183,7 +189,11 @@ void initMqttAndListen() async {
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              const Icon(Icons.location_on, color: Colors.green, size: 40),
+                              const Icon(
+                                Icons.location_on,
+                                color: Colors.green,
+                                size: 40,
+                              ),
                               Text(
                                 '${index + 1}',
                                 style: const TextStyle(
@@ -227,7 +237,7 @@ void initMqttAndListen() async {
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                     ),
-                    controller: TextEditingController(text: "5000"),
+                    controller: relayController,
                   ),
                 ),
               ],
@@ -239,7 +249,9 @@ void initMqttAndListen() async {
               child: Text(
                 _statusMessage,
                 style: TextStyle(
-                  color: _statusMessage.contains("สำเร็จ") ? Colors.green : Colors.red,
+                  color: _statusMessage.contains("สำเร็จ")
+                      ? Colors.green
+                      : Colors.red,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -254,11 +266,7 @@ void initMqttAndListen() async {
               const SizedBox(width: 8),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () {
-                          sendWaypointsToServerAndMqtt();
-                        },
+                  onPressed: _isLoading ? null : sendWaypointsToServerAndMqtt,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: mainColor,
                     minimumSize: const Size(60, 40),

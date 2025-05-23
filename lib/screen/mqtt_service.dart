@@ -1,4 +1,6 @@
 // screen/mqtt_service.dart
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:intl/intl.dart';
@@ -12,7 +14,12 @@ enum WaterLevelStatus { empty, half, full }
 class MqttService {
   static final MqttService _instance = MqttService._internal();
   factory MqttService() => _instance;
-  MqttService._internal();
+
+  MqttService._internal() {
+    currentPosition.addListener(() {
+      _currentPositionController.add(currentPosition.value);
+    });
+  }
 
   final String server = "49b6aef9efa2446282d4d2b466bafdcd.s1.eu.hivemq.cloud";
   final int port = 8883;
@@ -21,24 +28,33 @@ class MqttService {
 
   late MqttServerClient client;
 
+  // สถานะเซ็นเซอร์ต่าง ๆ
   double windSpeed = 0.0;
   double battery = 0.0;
   double chemical = 0.0;
   WaterLevelStatus waterLevel = WaterLevelStatus.empty;
-  double _distance = 0.0;
 
+  double _distance = 0.0;
   double get distance => _distance;
   set distance(double value) {
     _distance = value;
     onUpdate?.call();
   }
 
+  // ตำแหน่งปัจจุบันและความสูง
   ValueNotifier<LatLng?> currentPosition = ValueNotifier(null);
+  ValueNotifier<double?> altitude = ValueNotifier(null);
+
+  final StreamController<LatLng?> _currentPositionController = StreamController.broadcast();
+  Stream<LatLng?> get currentPositionStream => _currentPositionController.stream;
 
   Function()? onUpdate;
 
   bool _connected = false;
   bool get isConnected => _connected;
+
+  // เก็บ topic ที่ subscribe แล้ว เพื่อป้องกัน subscribe ซ้ำ
+  final Set<String> _subscribedTopics = {};
 
   Future<void> connect() async {
     if (_connected) return;
@@ -60,35 +76,64 @@ class MqttService {
 
     if (client.connectionStatus?.state == MqttConnectionState.connected) {
       _connected = true;
-      _subscribe("Wind", _handleWind);
-      _subscribe("battery", _handleBattery);
-      _subscribe("waterLevel", _handleWaterLevel);
-      _subscribe("chemical", _handleChemical);
-      _subscribe("distance", _handleDistance);
-      _subscribe("currentPosition", _handleCurrentPosition);
-      _subscribe("pump_lavel", _handleSprayStatus); // เพิ่มบรรทัดนี้หลังจากเชื่อมต่อสำเร็จ
-
+      // subscribe เฉพาะ topic ที่ยังไม่เคย subscribe
+      _subscribeIfNeeded("Wind", _handleWind);
+      _subscribeIfNeeded("battery", _handleBattery);
+      _subscribeIfNeeded("waterLevel", _handleWaterLevel);
+      _subscribeIfNeeded("chemical", _handleChemical);
+      _subscribeIfNeeded("distance", _handleDistance);
+      _subscribeIfNeeded("pixhawk/gps", _handleCurrentPosition);
+      _subscribeIfNeeded("pump_lavel", _handleSprayStatus);
+      _subscribeIfNeeded("sub_pump_lavel", _handleSprayStatus);
     } else {
+      print('MQTT Connection failed - disconnecting');
       client.disconnect();
     }
   }
 
-  void _subscribe(String topic, Function(String) callback) {
+  void _subscribeIfNeeded(String topic, Function(String) callback) {
+    if (_subscribedTopics.contains(topic)) return;
+    _subscribedTopics.add(topic);
+
     client.subscribe(topic, MqttQos.atMostOnce);
 
     client.updates?.listen((List<MqttReceivedMessage<MqttMessage>> events) {
       for (var event in events) {
-        final receivedTopic = event.topic;
-        if (receivedTopic == topic) {
+        if (event.topic == topic) {
           final recMess = event.payload as MqttPublishMessage;
-          final msg = MqttPublishPayload.bytesToStringAsString(
-              recMess.payload.message);
+          final msg = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
           callback(msg);
         }
       }
     });
   }
 
+  void disconnect() {
+    if (_connected) {
+      client.disconnect();
+      _connected = false;
+      print('MQTT Disconnected by user');
+    }
+  }
+
+  // ฟังก์ชันฟังข้อความแบบ generic
+  void listen(String topic, void Function(String) onMessage) {
+    if (!_subscribedTopics.contains(topic)) {
+      _subscribedTopics.add(topic);
+      client.subscribe(topic, MqttQos.atMostOnce);
+      client.updates?.listen((List<MqttReceivedMessage<MqttMessage>> messages) {
+        for (var message in messages) {
+          if (message.topic == topic) {
+            final recMess = message.payload as MqttPublishMessage;
+            final payload = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+            onMessage(payload);
+          }
+        }
+      });
+    }
+  }
+
+  // ตัวจัดการข้อความแต่ละประเภท
   void _handleWind(String msg) {
     windSpeed = double.tryParse(msg) ?? 0.0;
     onUpdate?.call();
@@ -124,15 +169,20 @@ class MqttService {
 
   void _handleCurrentPosition(String msg) {
     try {
-      final parts = msg.split(',');
-      if (parts.length == 2) {
-        final lat = double.parse(parts[0]);
-        final lon = double.parse(parts[1]);
-        currentPosition.value = LatLng(lat, lon);
+      final data = jsonDecode(msg);
+      final lat = data['latitude'];
+      final lon = data['longitude'];
+      final alt = data['altitude'];
+
+      if (lat is num && lon is num) {
+        currentPosition.value = LatLng(lat.toDouble(), lon.toDouble());
+        altitude.value = (alt is num) ? alt.toDouble() : null;
         onUpdate?.call();
+      } else {
+        print('Latitude or Longitude is not a number: $msg');
       }
     } catch (e) {
-      print('Invalid position: $msg');
+      print('Invalid JSON position: $msg');
     }
   }
 
@@ -146,7 +196,8 @@ class MqttService {
   }
 
   void publishSprayLevel(int sprayLevel) {
-    const String topic = "sprayLevel";
+    print("spray level: $sprayLevel");
+    const String topic = "sub_pump_lavel";
     publish(topic, sprayLevel.toString());
   }
 
@@ -162,14 +213,15 @@ class MqttService {
     publish("waypoint/home", "return");
   }
 
-  // ฟังก์ชันเพิ่มพิกัดเป้าหมายใหม่ให้ Pi เคลื่อนที่ไป
   void publishTargetPosition(LatLng position) {
-    final String topic = "waypoint/target";
+    final String topic = "waypoint/control/target";  // แก้เป็น topic ที่ต้องการ
     final String message = "${position.latitude},${position.longitude}";
     publish(topic, message);
   }
 
-  void _onConnected() => print('MQTT Connected');
+  void _onConnected() {
+    print('MQTT Connected');
+  }
 
   void _onDisconnected() {
     _connected = false;
@@ -183,27 +235,19 @@ class MqttService {
     return 'client-${formatter.format(now)}-$random';
   }
 
-  void listen(String topic, void Function(String) onMessage) {
-  client.subscribe(topic, MqttQos.atMostOnce);
+  ValueNotifier<bool> sprayStatus = ValueNotifier(false);
+  ValueNotifier<int> sprayLevel = ValueNotifier<int>(1);
 
-  client.updates?.listen((List<MqttReceivedMessage<MqttMessage>> messages) {
-    for (var message in messages) {
-      if (message.topic == topic) {
-        final recMess = message.payload as MqttPublishMessage;
-        final payload = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-        onMessage(payload);
-      }
-    }
-  });
-}
+  void _handleSprayStatus(String msg) {
+    sprayStatus.value = msg.toUpperCase() == 'ON';
+    onUpdate?.call();
+  }
 
-ValueNotifier<bool> sprayStatus = ValueNotifier(false);
-
-// ฟังก์ชันสำหรับ handle สถานะที่มาจาก topic "pump_lavel"
-void _handleSprayStatus(String msg) {
-  sprayStatus.value = msg.toUpperCase() == 'ON';
-  onUpdate?.call();
-}
-
-
+  void dispose() {
+    _currentPositionController.close();
+    currentPosition.dispose();
+    altitude.dispose();
+    sprayStatus.dispose();
+    sprayLevel.dispose();
+  }
 }

@@ -28,10 +28,9 @@ class MqttService {
 
   late MqttServerClient client;
 
-  // สถานะเซ็นเซอร์ต่าง ๆ
   double windSpeed = 0.0;
   double battery = 0.0;
-  double chemical = 0.0;
+  double chemical = 0.0; // ดึงจาก topic "water"
   WaterLevelStatus waterLevel = WaterLevelStatus.empty;
 
   double _distance = 0.0;
@@ -41,7 +40,6 @@ class MqttService {
     onUpdate?.call();
   }
 
-  // ตำแหน่งปัจจุบันและความสูง
   ValueNotifier<LatLng?> currentPosition = ValueNotifier(null);
   ValueNotifier<double?> altitude = ValueNotifier(null);
 
@@ -53,7 +51,6 @@ class MqttService {
   bool _connected = false;
   bool get isConnected => _connected;
 
-  // เก็บ topic ที่ subscribe แล้ว เพื่อป้องกัน subscribe ซ้ำ
   final Set<String> _subscribedTopics = {};
 
   Future<void> connect() async {
@@ -76,11 +73,14 @@ class MqttService {
 
     if (client.connectionStatus?.state == MqttConnectionState.connected) {
       _connected = true;
-      // subscribe เฉพาะ topic ที่ยังไม่เคย subscribe
+
       _subscribeIfNeeded("Wind", _handleWind);
       _subscribeIfNeeded("battery", _handleBattery);
       _subscribeIfNeeded("waterLevel", _handleWaterLevel);
-      _subscribeIfNeeded("chemical", _handleChemical);
+
+      // ✅ ใช้ topic "water" สำหรับ chemical level
+      _subscribeIfNeeded("water", _handleChemical);
+
       _subscribeIfNeeded("distance", _handleDistance);
       _subscribeIfNeeded("pixhawk/gps", _handleCurrentPosition);
       _subscribeIfNeeded("pump_lavel", _handleSprayStatus);
@@ -96,7 +96,6 @@ class MqttService {
     _subscribedTopics.add(topic);
 
     client.subscribe(topic, MqttQos.atMostOnce);
-
     client.updates?.listen((List<MqttReceivedMessage<MqttMessage>> events) {
       for (var event in events) {
         if (event.topic == topic) {
@@ -116,7 +115,6 @@ class MqttService {
     }
   }
 
-  // ฟังก์ชันฟังข้อความแบบ generic
   void listen(String topic, void Function(String) onMessage) {
     if (!_subscribedTopics.contains(topic)) {
       _subscribedTopics.add(topic);
@@ -133,7 +131,6 @@ class MqttService {
     }
   }
 
-  // ตัวจัดการข้อความแต่ละประเภท
   void _handleWind(String msg) {
     windSpeed = double.tryParse(msg) ?? 0.0;
     onUpdate?.call();
@@ -214,7 +211,7 @@ class MqttService {
   }
 
   void publishTargetPosition(LatLng position) {
-    final String topic = "waypoint/control/target";  // แก้เป็น topic ที่ต้องการ
+    final String topic = "waypoint/control/target";
     final String message = "${position.latitude},${position.longitude}";
     publish(topic, message);
   }

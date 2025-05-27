@@ -44,6 +44,61 @@ class NotificationItem {
   }
 }
 
+class MQTTService {
+  final String broker = 'test.mosquitto.org'; // เปลี่ยนเป็น IP หรือ hostname ของ broker คุณ
+  final String topic = 'spray_car/notification'; // เปลี่ยนเป็น topic ที่ต้องการรับข้อมูล
+
+  late MqttServerClient client;
+
+  Future<void> connect(Function(String message) onMessage) async {
+    client = MqttServerClient(broker, '');
+    client.port = 1883;
+    client.keepAlivePeriod = 20;
+    client.onDisconnected = onDisconnected;
+    client.onConnected = onConnected;
+    client.onSubscribed = onSubscribed;
+    client.logging(on: false);
+    client.setProtocolV311();
+
+    final connMess = MqttConnectMessage()
+        .withClientIdentifier('flutter_client_${DateTime.now().millisecondsSinceEpoch}')
+        .startClean();
+
+    client.connectionMessage = connMess;
+
+    try {
+      await client.connect();
+    } catch (e) {
+      print('MQTT connect error: $e');
+      client.disconnect();
+      return;
+    }
+
+    client.subscribe(topic, MqttQos.atMostOnce);
+
+    client.updates!.listen((List<MqttReceivedMessage<MqttMessage>> c) {
+      final recMess = c[0].payload as MqttPublishMessage;
+      final payload =
+          MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+
+      // เมื่อมีข้อความจาก MQTT
+      onMessage(payload);
+    });
+  }
+
+  void onConnected() {
+    print('Connected to MQTT');
+  }
+
+  void onDisconnected() {
+    print('Disconnected from MQTT');
+  }
+
+  void onSubscribed(String topic) {
+    print('Subscribed to $topic');
+  }
+}
+
 @RoutePage(name: 'NotificationRoute')
 class NotificationPage extends StatefulWidget {
   const NotificationPage({Key? key}) : super(key: key);
@@ -75,6 +130,11 @@ class _NotificationPageState extends State<NotificationPage>
   @override
   void initState() {
     super.initState();
+
+    MQTTService().connect((msg) {
+  _handleMessage(msg); // ใช้เมธอดที่คุณมีอยู่แล้ว
+});
+
     _tabController = TabController(length: 3, vsync: this);
     _initializeNotifications(); // setup local noti
     _setupMqtt(); // setup MQTT
@@ -185,16 +245,17 @@ class _NotificationPageState extends State<NotificationPage>
     _showSystemNotification(title, subtitle);
   }
 
-  List<NotificationItem> _filteredNotifications() {
-    switch (_tabController.index) {
-      case 1:
-        return notifications.where((n) => !n.isRead).toList();
-      case 2:
-        return notifications.where((n) => n.isRead).toList();
-      default:
-        return notifications;
-    }
+  List<NotificationItem> _filteredNotifications(int index) {
+  switch (index) {
+    case 1:
+      return notifications.where((n) => !n.isRead).toList();
+    case 2:
+      return notifications.where((n) => n.isRead).toList();
+    default:
+      return notifications;
   }
+}
+  // สร้าง ListTile สำหรับแต่ละ NotificationItem
 
   Widget _buildListTile(NotificationItem item, int index) {
     return Padding(
@@ -257,7 +318,7 @@ class _NotificationPageState extends State<NotificationPage>
 
   @override
   Widget build(BuildContext context) {
-    final currentNotifications = _filteredNotifications();
+    final currentNotifications = _filteredNotifications(_tabController.index);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0FAFF),

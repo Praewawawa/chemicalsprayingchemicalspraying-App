@@ -1,6 +1,5 @@
 // screen/controlwaypoin.dart
 import 'dart:async'; 
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -19,7 +18,6 @@ class ControlwaypoinPage extends StatefulWidget {
 }
 
 class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
-  int _selectedIndex = 1;
   List<LatLng> waypoints = [];
   LatLng? currentPosition;
   final MqttService mqtt = MqttService();
@@ -88,8 +86,8 @@ class _ControlwaypoinPageState extends State<ControlwaypoinPage> {
           },
         );
 
-        // ส่ง waypoint ผ่าน MQTT ไป topic waypoint/control/target
-       mqtt.publishTargetPosition(point);
+        // ส่ง waypoint ผ่าน MQTT ไป topic waypoint/control/target (รูปแบบ JSON)
+        mqtt.publishTargetPosition(point);
       }
 
       // สั่งเปลี่ยน mode เป็น Auto

@@ -281,7 +281,7 @@ class ChemicalCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     Text(
                       "$chemicalPercent%",
                       style: const TextStyle(
@@ -326,12 +326,12 @@ class DistanceCard extends StatelessWidget {
     return _buildCardmin(
       title: "ระยะในการทำงานที่เหลือ",
       child: SizedBox(
-        height: 160,
+        height: 120,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-            Icon(Icons.alt_route, color: Colors.black),
-            SizedBox(width: 8),
+          const Icon(Icons.alt_route, size: 18), // ปรับขนาด Icon
+          const SizedBox(width: 6),
             Text("10 Km", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30)),
           ],
         ),
@@ -498,7 +498,7 @@ Widget _buildCardmin({required String title, required Widget child}) {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 12),
+        const SizedBox(height: 0.1),
         child,
       ],
     ),

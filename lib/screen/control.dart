@@ -20,7 +20,6 @@ class _ControlScreenState extends State<ControlScreen> {
   int _selectedIndex = 1;
   bool isCustomMode = false;
   Timer? _holdTimer;
-  Timer? _sendTimer;
 
   final List<PageRouteInfo> _routes = [
     AddprofileRoute(),
@@ -56,14 +55,14 @@ class _ControlScreenState extends State<ControlScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Error'),
+          title: const Text('Error'),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -74,44 +73,43 @@ class _ControlScreenState extends State<ControlScreen> {
   void sendArm() => sendCommand("arm");
   void sendDisarm() => sendCommand("disarm");
 
-// ฟังก์ชันนี้จะถูกเรียกเมื่อปุ่มถูกกด
+  // เริ่มส่งคำสั่งซ้ำทุก 200ms ขณะกดปุ่ม
   void _startSendingCommand(String command) {
+    if (_holdTimer != null) return; // ป้องกัน Timer ซ้อนกัน
     sendCommand(command);
     _holdTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
       sendCommand(command);
     });
   }
 
-// ฟังก์ชันนี้จะถูกเรียกเมื่อปุ่มถูกปล่อย
+  // หยุดส่งคำสั่งและส่งคำสั่ง stop
   void _stopSendingCommand() {
     _holdTimer?.cancel();
     _holdTimer = null;
     sendCommand("stop");
   }
 
-// ฟังก์ชันนี้จะถูกเรียกเมื่อมีการเลือก BottomNavigationBar
+  // เมื่อกดเลือกแท็บ
   void _onItemTapped(int index) {
+    if (_selectedIndex == index) return; // ไม่เปลี่ยน route ถ้าเลือกแท็บเดิม
     setState(() {
       _selectedIndex = index;
     });
     context.router.replace(_routes[index]);
   }
 
-
-
-
   @override
   void dispose() {
-    _holdTimer?.cancel(); // ✅ เคลียร์ Timer
+    _holdTimer?.cancel();
     super.dispose();
   }
 
-// ฟังก์ชันนี้จะถูกเรียกเมื่อ Widget ถูกสร้าง
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0FAFF),
       appBar: AppBar(
+        
         title: const Text(
           "RC Control Panel",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
@@ -128,6 +126,8 @@ class _ControlScreenState extends State<ControlScreen> {
                 setState(() => isCustomMode = value);
                 if (value) {
                   context.router.replace(const ControlwaypointRoute());
+                } else {
+                  context.router.replace(const ControlRoute());
                 }
               },
               activeColor: Colors.green,
@@ -204,69 +204,68 @@ class _ControlScreenState extends State<ControlScreen> {
     );
   }
 
-// ฟังก์ชันนี้ใช้สำหรับการ Padding รอบๆ Widget
+  // Padding รอบๆ Widget
   Widget _padded(Widget child) {
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: child,
     );
   }
-  
-// ฟังก์ชันนี้ใช้สำหรับการสร้างปุ่มทิศทาง
-Widget _directionButton(IconData icon, String command) {
-  return SizedBox(
-    width: 60,
-    height: 60,
-    child: ElevatedButton(
-      onPressed: () => _startSendingCommand(command),
-      onLongPress: () => _stopSendingCommand(), // ปล่อยเมื่อกดค้าง
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.grey[300],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+
+  // ปุ่มทิศทาง ใช้ GestureDetector เพื่อจับการกดค้างและปล่อยปุ่ม
+  Widget _directionButton(IconData icon, String command) {
+    return SizedBox(
+      width: 60,
+      height: 60,
+      child: GestureDetector(
+        onTapDown: (_) => _startSendingCommand(command),
+        onTapUp: (_) => _stopSendingCommand(),
+        onTapCancel: () => _stopSendingCommand(),
+        child: ElevatedButton(
+          onPressed: () {},
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.grey[300],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: EdgeInsets.zero,
+            elevation: 4,
+          ),
+          child: Icon(icon, size: 28, color: Colors.black87),
         ),
-        padding: EdgeInsets.zero,
-        elevation: 4,
       ),
-      child: Icon(icon, size: 28, color: Colors.black87),
-    ),
-  );
-}
+    );
+  }
 
-
-
-
-  // สำหรับปุ่ม STOP
-Widget _stopButton() {
-  return SizedBox(
-    width: 60,
-    height: 60,
-    child: ElevatedButton(
-      onPressed: () => sendCommand("stop"),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.redAccent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+  // ปุ่ม STOP
+  Widget _stopButton() {
+    return SizedBox(
+      width: 60,
+      height: 60,
+      child: ElevatedButton(
+        onPressed: () => sendCommand("stop"),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.redAccent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 4,
+          padding: EdgeInsets.zero,
         ),
-        elevation: 4, // เพิ่มความนูนให้ดูเด่น
-        padding: EdgeInsets.zero, // ป้องกันไม่ให้ปุ่มขยายเกินขนาด
-      ),
-      child: const Text(
-        'STOP',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 14, // ปรับให้พอดีในปุ่มเล็ก
+        child: const Text(
+          'STOP',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+          textAlign: TextAlign.center,
         ),
-        textAlign: TextAlign.center,
       ),
-    ),
-  );
-}
+    );
+  }
 
-
-
-// สำหรับปุ่ม ARM และ DISARM
+  // ปุ่ม ARM และ DISARM
   Widget _actionButton(String label, Color color, void Function() onPressed) {
     return ElevatedButton(
       onPressed: onPressed,

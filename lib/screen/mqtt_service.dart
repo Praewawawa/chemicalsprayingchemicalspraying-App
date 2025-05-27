@@ -27,10 +27,12 @@ class MqttService {
   final String password = "@Dm!np159753";
 
   late MqttServerClient client;
+  final Set<String> _subscribedTopics = {};
+  final Map<String, Function(String)> _topicCallbacks = {};
 
   double windSpeed = 0.0;
   double battery = 0.0;
-  double chemical = 0.0; // ดึงจาก topic "water"
+  double chemical = 0.0;
   WaterLevelStatus waterLevel = WaterLevelStatus.empty;
 
   double _distance = 0.0;
@@ -42,6 +44,8 @@ class MqttService {
 
   ValueNotifier<LatLng?> currentPosition = ValueNotifier(null);
   ValueNotifier<double?> altitude = ValueNotifier(null);
+  ValueNotifier<bool> sprayStatus = ValueNotifier(false);
+  ValueNotifier<int> sprayLevel = ValueNotifier(1);
 
   final StreamController<LatLng?> _currentPositionController = StreamController.broadcast();
   Stream<LatLng?> get currentPositionStream => _currentPositionController.stream;
@@ -51,8 +55,6 @@ class MqttService {
   bool _connected = false;
   bool get isConnected => _connected;
 
-  final Set<String> _subscribedTopics = {};
-
   Future<void> connect() async {
     if (_connected) return;
 
@@ -61,8 +63,7 @@ class MqttService {
       ..securityContext = SecurityContext.defaultContext
       ..keepAlivePeriod = 20
       ..onDisconnected = _onDisconnected
-      ..onConnected = _onConnected
-      ..onSubscribed = (String topic) => print('Subscribed: $topic');
+      ..onConnected = _onConnected;
 
     try {
       await client.connect(username, password);
@@ -73,64 +74,115 @@ class MqttService {
 
     if (client.connectionStatus?.state == MqttConnectionState.connected) {
       _connected = true;
+      print("MQTT Connected");
 
-      _subscribeIfNeeded("Wind", _handleWind);
-      _subscribeIfNeeded("battery", _handleBattery);
-      _subscribeIfNeeded("waterLevel", _handleWaterLevel);
+      _setupUpdatesListener();
 
-      // ✅ ใช้ topic "water" สำหรับ chemical level
-      _subscribeIfNeeded("water", _handleChemical);
-
-      _subscribeIfNeeded("distance", _handleDistance);
-      _subscribeIfNeeded("pixhawk/gps", _handleCurrentPosition);
-      _subscribeIfNeeded("pump_lavel", _handleSprayStatus);
-      _subscribeIfNeeded("sub_pump_lavel", _handleSprayStatus);
+      // Subscribe topics
+      _subscribe("Wind", _handleWind);
+      _subscribe("battery", _handleBattery);
+      _subscribe("waterLevel", _handleWaterLevel);
+      _subscribe("water", _handleChemical);
+      _subscribe("distance", _handleDistance);
+      _subscribe("pixhawk/gps", _handleCurrentPosition);
+      _subscribe("pump_lavel", _handleSprayStatus);
+      _subscribe("sub_pump_lavel", _handleSprayStatus);
     } else {
-      print('MQTT Connection failed - disconnecting');
+      print('MQTT Connection failed');
       client.disconnect();
     }
   }
 
-  void _subscribeIfNeeded(String topic, Function(String) callback) {
-    if (_subscribedTopics.contains(topic)) return;
-    _subscribedTopics.add(topic);
-
-    client.subscribe(topic, MqttQos.atMostOnce);
+  void _setupUpdatesListener() {
     client.updates?.listen((List<MqttReceivedMessage<MqttMessage>> events) {
       for (var event in events) {
-        if (event.topic == topic) {
-          final recMess = event.payload as MqttPublishMessage;
-          final msg = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-          callback(msg);
-        }
+        final topic = event.topic;
+        final recMess = event.payload as MqttPublishMessage;
+        final msg = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+        _topicCallbacks[topic]?.call(msg);
       }
     });
+  }
+
+  void _subscribe(String topic, Function(String) callback) {
+    if (!_connected || _subscribedTopics.contains(topic)) return;
+    _subscribedTopics.add(topic);
+    _topicCallbacks[topic] = callback;
+    client.subscribe(topic, MqttQos.atMostOnce);
+  }
+
+  void listen(String topic, void Function(String) onMessage) {
+    _subscribe(topic, onMessage);
+  }
+
+  void publish(String topic, String message) {
+    if (!_connected) {
+      print('MQTT not connected. Cannot publish to $topic');
+      return;
+    }
+    final builder = MqttClientPayloadBuilder()..addString(message);
+    client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
+  }
+
+  void publishSprayLevel(int sprayLevel) {
+    print("Spray level: $sprayLevel");
+    publish("sub_pump_lavel", sprayLevel.toString());
+  }
+
+  void publishStartNavigation() {
+    publish("waypoint/start", "start");
+  }
+
+  void publishStopNavigation() {
+    publish("waypoint/start", "stop");
+  }
+
+  void publishReturnHome() {
+    publish("waypoint/home", "return");
+  }
+
+  void publishTargetPosition(LatLng position) {
+    final msg = "${position.latitude},${position.longitude}";
+    publish("waypoint/control/target", msg);
   }
 
   void disconnect() {
     if (_connected) {
       client.disconnect();
       _connected = false;
+      _resetValues();
       print('MQTT Disconnected by user');
     }
   }
 
-  void listen(String topic, void Function(String) onMessage) {
-    if (!_subscribedTopics.contains(topic)) {
-      _subscribedTopics.add(topic);
-      client.subscribe(topic, MqttQos.atMostOnce);
-      client.updates?.listen((List<MqttReceivedMessage<MqttMessage>> messages) {
-        for (var message in messages) {
-          if (message.topic == topic) {
-            final recMess = message.payload as MqttPublishMessage;
-            final payload = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-            onMessage(payload);
-          }
-        }
-      });
-    }
+  void _onConnected() {
+    print('MQTT Connected Callback');
   }
 
+  void _onDisconnected() {
+    _connected = false;
+    print('MQTT Disconnected');
+    _resetValues();
+
+    // Try reconnect
+    Future.delayed(Duration(seconds: 5), () {
+      print('Attempting reconnect...');
+      connect();
+    });
+  }
+
+  void _resetValues() {
+    windSpeed = 0.0;
+    battery = 0.0;
+    chemical = 0.0;
+    distance = 0.0;
+    currentPosition.value = null;
+    altitude.value = null;
+    sprayStatus.value = false;
+    sprayLevel.value = 1;
+  }
+
+  // --- Callback Handlers ---
   void _handleWind(String msg) {
     windSpeed = double.tryParse(msg) ?? 0.0;
     onUpdate?.call();
@@ -176,53 +228,16 @@ class MqttService {
         altitude.value = (alt is num) ? alt.toDouble() : null;
         onUpdate?.call();
       } else {
-        print('Latitude or Longitude is not a number: $msg');
+        print('Invalid lat/lon types: $msg');
       }
     } catch (e) {
-      print('Invalid JSON position: $msg');
+      print('Error parsing GPS JSON: $msg');
     }
   }
 
-  void publish(String topic, String message) {
-    if (!_connected) {
-      print('MQTT not connected. Cannot publish to $topic');
-      return;
-    }
-    final builder = MqttClientPayloadBuilder()..addString(message);
-    client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
-  }
-
-  void publishSprayLevel(int sprayLevel) {
-    print("spray level: $sprayLevel");
-    const String topic = "sub_pump_lavel";
-    publish(topic, sprayLevel.toString());
-  }
-
-  void publishStartNavigation() {
-    publish("waypoint/start", "start");
-  }
-
-  void publishStopNavigation() {
-    publish("waypoint/start", "stop");
-  }
-
-  void publishReturnHome() {
-    publish("waypoint/home", "return");
-  }
-
-  void publishTargetPosition(LatLng position) {
-    final String topic = "waypoint/control/target";
-    final String message = "${position.latitude},${position.longitude}";
-    publish(topic, message);
-  }
-
-  void _onConnected() {
-    print('MQTT Connected');
-  }
-
-  void _onDisconnected() {
-    _connected = false;
-    print('MQTT Disconnected');
+  void _handleSprayStatus(String msg) {
+    sprayStatus.value = msg.toUpperCase() == 'ON';
+    onUpdate?.call();
   }
 
   String _generateClientId() {
@@ -230,14 +245,6 @@ class MqttService {
     final formatter = DateFormat('yyyyMMddHHmmss');
     final random = Random().nextInt(99999);
     return 'client-${formatter.format(now)}-$random';
-  }
-
-  ValueNotifier<bool> sprayStatus = ValueNotifier(false);
-  ValueNotifier<int> sprayLevel = ValueNotifier<int>(1);
-
-  void _handleSprayStatus(String msg) {
-    sprayStatus.value = msg.toUpperCase() == 'ON';
-    onUpdate?.call();
   }
 
   void dispose() {

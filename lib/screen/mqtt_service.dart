@@ -1,8 +1,10 @@
 // screen/mqtt_service.dart
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+
 import 'package:intl/intl.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
@@ -47,8 +49,10 @@ class MqttService {
   ValueNotifier<bool> sprayStatus = ValueNotifier(false);
   ValueNotifier<int> sprayLevel = ValueNotifier(1);
 
-  final StreamController<LatLng?> _currentPositionController = StreamController.broadcast();
-  Stream<LatLng?> get currentPositionStream => _currentPositionController.stream;
+  final StreamController<LatLng?> _currentPositionController =
+      StreamController.broadcast();
+  Stream<LatLng?> get currentPositionStream =>
+      _currentPositionController.stream;
 
   Function()? onUpdate;
 
@@ -58,17 +62,20 @@ class MqttService {
   Future<void> connect() async {
     if (_connected) return;
 
-    client = MqttServerClient.withPort(server, _generateClientId(), port)
-      ..secure = true
-      ..securityContext = SecurityContext.defaultContext
-      ..keepAlivePeriod = 20
-      ..onDisconnected = _onDisconnected
-      ..onConnected = _onConnected;
+    client = MqttServerClient.withPort(server, _generateClientId(), port);
+    client.secure = true;
+    client.securityContext = SecurityContext.defaultContext;
+    client.keepAlivePeriod = 20;
+    client.onDisconnected = _onDisconnected;
+    client.onConnected = _onConnected;
+    client.logging(on: false);
 
     try {
       await client.connect(username, password);
     } catch (e) {
       print('MQTT Connect error: $e');
+      _connected = false;
+      client.disconnect();
       return;
     }
 
@@ -78,17 +85,15 @@ class MqttService {
 
       _setupUpdatesListener();
 
-      // Subscribe topics
       _subscribe("Wind", _handleWind);
       _subscribe("battery", _handleBattery);
-      _subscribe("waterLevel", _handleWaterLevel);
       _subscribe("water", _handleChemical);
       _subscribe("distance", _handleDistance);
       _subscribe("pixhawk/gps", _handleCurrentPosition);
       _subscribe("pump_lavel", _handleSprayStatus);
-      _subscribe("sub_pump_lavel", _handleSprayStatus);
+      _subscribe("pump_status", _handleSprayStatus);
     } else {
-      print('MQTT Connection failed');
+      print('MQTT Connection failed: ${client.connectionStatus}');
       client.disconnect();
     }
   }
@@ -98,7 +103,8 @@ class MqttService {
       for (var event in events) {
         final topic = event.topic;
         final recMess = event.payload as MqttPublishMessage;
-        final msg = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+        final msg =
+            MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
         _topicCallbacks[topic]?.call(msg);
       }
     });
@@ -124,9 +130,14 @@ class MqttService {
     client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
   }
 
-  void publishSprayLevel(int sprayLevel) {
-    print("Spray level: $sprayLevel");
-    publish("sub_pump_lavel", sprayLevel.toString());
+  void publishSprayLevel(int level) {
+    sprayLevel.value = level;
+    publish("sub_pump_lavel", level.toString());
+  }
+
+  void publishSprayStatus(bool isOn) {
+    sprayStatus.value = isOn;
+    publish("pump_status", isOn ? "ON" : "OFF");
   }
 
   void publishStartNavigation() {
@@ -164,7 +175,6 @@ class MqttService {
     print('MQTT Disconnected');
     _resetValues();
 
-    // Try reconnect
     Future.delayed(Duration(seconds: 5), () {
       print('Attempting reconnect...');
       connect();
@@ -182,7 +192,6 @@ class MqttService {
     sprayLevel.value = 1;
   }
 
-  // --- Callback Handlers ---
   void _handleWind(String msg) {
     windSpeed = double.tryParse(msg) ?? 0.0;
     onUpdate?.call();
@@ -190,20 +199,6 @@ class MqttService {
 
   void _handleBattery(String msg) {
     battery = double.tryParse(msg) ?? 0.0;
-    onUpdate?.call();
-  }
-
-  void _handleWaterLevel(String msg) {
-    switch (msg.toLowerCase()) {
-      case 'full':
-        waterLevel = WaterLevelStatus.full;
-        break;
-      case 'half':
-        waterLevel = WaterLevelStatus.half;
-        break;
-      default:
-        waterLevel = WaterLevelStatus.empty;
-    }
     onUpdate?.call();
   }
 
@@ -236,7 +231,11 @@ class MqttService {
   }
 
   void _handleSprayStatus(String msg) {
-    sprayStatus.value = msg.toUpperCase() == 'ON';
+    if (msg.toUpperCase() == 'ON') {
+      sprayStatus.value = true;
+    } else if (msg.toUpperCase() == 'OFF') {
+      sprayStatus.value = false;
+    }
     onUpdate?.call();
   }
 

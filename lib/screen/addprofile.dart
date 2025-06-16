@@ -1,4 +1,4 @@
- // screen/addprofile.dart
+// screen/addprofile.dart
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
@@ -6,8 +6,6 @@ import 'package:chemicalspraying/constants/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'mqtt_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-/*import 'package:wave/wave.dart';
-import 'package:wave/config.dart';*/
 
 @RoutePage(name: 'AddprofileRoute')
 class AddprofilePage extends StatefulWidget {
@@ -138,7 +136,7 @@ class _AddprofilePageState extends State<AddprofilePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('N↑', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                //const Text(' 0 °', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)), ทิศทางเป็นองศา
                 const SizedBox(height: 8),
                 Text(windSpeed.toStringAsFixed(2), style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
                 const Text('m/s', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
@@ -150,8 +148,6 @@ class _AddprofilePageState extends State<AddprofilePage> {
     );
   }
 }
-
-
 
 class BatteryCard extends StatelessWidget {
   const BatteryCard({super.key});
@@ -211,7 +207,7 @@ class BatteryCard extends StatelessWidget {
                     Text(
                       "$batteryPercent%",
                       style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87),
                     ),
@@ -256,7 +252,7 @@ class ChemicalCard extends StatelessWidget {
             ),
             // ตัวถัง
             Positioned(
-              top: 10,
+              top: 0,
               bottom: 0,
               left: 0,
               right: 0,
@@ -267,25 +263,25 @@ class ChemicalCard extends StatelessWidget {
                   color: Colors.white,
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     for (int i in List.generate(5, (index) => index).reversed)
                       Container(
                         margin: const EdgeInsets.symmetric(vertical: 2),
-                        height: 25,
+                        height: 26,
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: _getBlockColor(i, chemicalLevel),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 0),
                     Text(
                       "$chemicalPercent%",
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
@@ -300,23 +296,14 @@ class ChemicalCard extends StatelessWidget {
     );
   }
 
-  /// กำหนดสีของ block ตามระดับ
   Color _getBlockColor(int index, double level) {
     if ((level * 5).floor() > index) {
-      return const Color(0xFF40C947); // สีเขียวเมื่อมีสาร
+      return const Color(0xFF40C947);
     } else {
-      return Colors.grey.shade300; // สีเทาเมื่อไม่มี
+      return Colors.grey.shade300;
     }
   }
-
- 
 }
-
-
-
-
-
-
 
 class DistanceCard extends StatelessWidget {
   const DistanceCard({super.key});
@@ -330,9 +317,10 @@ class DistanceCard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-          const Icon(Icons.alt_route, size: 18), // ปรับขนาด Icon
-          const SizedBox(width: 6),
-            Text("10 Km", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30)),
+            Icon(Icons.alt_route, size: 18),
+            SizedBox(width: 6),
+            Text("0 Km", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30)),
+            //Text("10 Km", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30)),
           ],
         ),
       ),
@@ -349,7 +337,7 @@ class SprayControlCard extends StatefulWidget {
 
 class _SprayControlCardState extends State<SprayControlCard> {
   bool isSprayOn = false;
-  int sprayLevel = 1; // เริ่มที่ 1 (หรือ 0 ถ้าอยากแสดง 0)
+  int sprayLevel = 1;
 
   @override
   void initState() {
@@ -360,7 +348,7 @@ class _SprayControlCardState extends State<SprayControlCard> {
   Future<void> _loadSprayLevel() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      sprayLevel = prefs.getInt('spray_level') ?? 1; // ค่า default เป็น 1
+      sprayLevel = prefs.getInt('spray_level') ?? 1;
     });
   }
 
@@ -393,7 +381,7 @@ class _SprayControlCardState extends State<SprayControlCard> {
           Column(
             children: [
               IconButton(
-               onPressed: () {
+                onPressed: () {
                   _increaseLevel();
                   MqttService().publishSprayLevel(sprayLevel);
                 },
@@ -413,7 +401,7 @@ class _SprayControlCardState extends State<SprayControlCard> {
               ),
               IconButton(
                 onPressed: () {
-                  _decreaseLevel(); // หรือเขียน setState(() => sprayLevel--)
+                  _decreaseLevel();
                   MqttService().publishSprayLevel(sprayLevel);
                 },
                 icon: const Icon(Icons.arrow_drop_down, color: Colors.green, size: 30),
@@ -462,7 +450,6 @@ class _SprayControlCardState extends State<SprayControlCard> {
       ),
     );
   }
-  
 }
 
 Widget _buildCard({required String title, required Widget child}) {
@@ -478,12 +465,11 @@ Widget _buildCard({required String title, required Widget child}) {
       children: [
         Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        SizedBox(height: 230, child: child), // เพิ่มความสูง
+        SizedBox(height: 230, child: child),
       ],
     ),
   );
 }
-
 
 Widget _buildCardmin({required String title, required Widget child}) {
   return Container(

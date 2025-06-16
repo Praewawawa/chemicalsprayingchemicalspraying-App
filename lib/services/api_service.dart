@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.0.116:3000/api'; // ✅ เปลี่ยนตาม IP Server
+  static const String baseUrl = 'http://192.168.0.136:3000/api'; // ✅ เปลี่ยนตาม IP Server
  //192.168.0.116
  //192.168.46.205
   // ✅ Login

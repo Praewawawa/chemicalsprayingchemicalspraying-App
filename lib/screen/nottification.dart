@@ -1,6 +1,4 @@
 // screen/nottification.dart
-
-
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
@@ -10,7 +8,6 @@ import 'package:chemicalspraying/constants/colors.dart';
 import 'package:chemicalspraying/router/routes.gr.dart';
 import 'package:auto_route/auto_route.dart';
 import 'dart:convert';
-import 'dart:io';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -44,61 +41,6 @@ class NotificationItem {
   }
 }
 
-class MQTTService {
-  final String broker = 'test.mosquitto.org'; // เปลี่ยนเป็น IP หรือ hostname ของ broker คุณ
-  final String topic = 'spray_car/notification'; // เปลี่ยนเป็น topic ที่ต้องการรับข้อมูล
-
-  late MqttServerClient client;
-
-  Future<void> connect(Function(String message) onMessage) async {
-    client = MqttServerClient(broker, '');
-    client.port = 1883;
-    client.keepAlivePeriod = 20;
-    client.onDisconnected = onDisconnected;
-    client.onConnected = onConnected;
-    client.onSubscribed = onSubscribed;
-    client.logging(on: false);
-    client.setProtocolV311();
-
-    final connMess = MqttConnectMessage()
-        .withClientIdentifier('flutter_client_${DateTime.now().millisecondsSinceEpoch}')
-        .startClean();
-
-    client.connectionMessage = connMess;
-
-    try {
-      await client.connect();
-    } catch (e) {
-      print('MQTT connect error: $e');
-      client.disconnect();
-      return;
-    }
-
-    client.subscribe(topic, MqttQos.atMostOnce);
-
-    client.updates!.listen((List<MqttReceivedMessage<MqttMessage>> c) {
-      final recMess = c[0].payload as MqttPublishMessage;
-      final payload =
-          MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-
-      // เมื่อมีข้อความจาก MQTT
-      onMessage(payload);
-    });
-  }
-
-  void onConnected() {
-    print('Connected to MQTT');
-  }
-
-  void onDisconnected() {
-    print('Disconnected from MQTT');
-  }
-
-  void onSubscribed(String topic) {
-    print('Subscribed to $topic');
-  }
-}
-
 @RoutePage(name: 'NotificationRoute')
 class NotificationPage extends StatefulWidget {
   const NotificationPage({Key? key}) : super(key: key);
@@ -113,6 +55,7 @@ class _NotificationPageState extends State<NotificationPage>
   List<NotificationItem> notifications = [];
   late TabController _tabController;
   int _selectedIndex = 2;
+
   final List<PageRouteInfo> _routes = const [
     AddprofileRoute(),
     ControlRoute(),
@@ -130,14 +73,9 @@ class _NotificationPageState extends State<NotificationPage>
   @override
   void initState() {
     super.initState();
-
-    MQTTService().connect((msg) {
-  _handleMessage(msg); // ใช้เมธอดที่คุณมีอยู่แล้ว
-});
-
     _tabController = TabController(length: 3, vsync: this);
-    _initializeNotifications(); // setup local noti
-    _setupMqtt(); // setup MQTT
+    _initializeNotifications();
+    _setupMqtt();
   }
 
   void _initializeNotifications() async {
@@ -164,31 +102,35 @@ class _NotificationPageState extends State<NotificationPage>
     );
 
     await flutterLocalNotificationsPlugin.show(
-      0,
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
       title,
       body,
       platformDetails,
-      payload: 'default',
     );
   }
 
   void _setupMqtt() async {
-    client = MqttServerClient('test.mosquitto.org', 'flutter_client_${DateTime.now().millisecondsSinceEpoch}');
-    client.port = 8883;
+    client = MqttServerClient(
+      'test.mosquitto.org',
+      'flutter_client_${DateTime.now().millisecondsSinceEpoch}',
+    );
+    client.port = 1883;
     client.keepAlivePeriod = 60;
-    client.onBadCertificate = (X509Certificate cert) => true;
     client.logging(on: false);
     client.onConnected = () {
-      print('MQTT Connected');
+      print('✅ MQTT Connected');
       client.subscribe('rc/notification', MqttQos.atLeastOnce);
     };
-    client.onDisconnected = () => print('MQTT Disconnected');
-    client.onSubscribed = (topic) => print('Subscribed to $topic');
+    client.onDisconnected = () {
+      print('MQTT Disconnected');
+      Future.delayed(const Duration(seconds: 5), _setupMqtt); // auto reconnect
+    };
+    client.onSubscribed = (topic) => print('📌 Subscribed to $topic');
 
     try {
       await client.connect();
     } catch (e) {
-      print('MQTT Error: $e');
+      print('MQTT Connection Error: $e');
       client.disconnect();
     }
 
@@ -241,90 +183,185 @@ class _NotificationPageState extends State<NotificationPage>
       );
     });
 
-    // 🔔 แสดงระบบแจ้งเตือน
     _showSystemNotification(title, subtitle);
   }
 
-  List<NotificationItem> _filteredNotifications(int index) {
-  switch (index) {
-    case 1:
-      return notifications.where((n) => !n.isRead).toList();
-    case 2:
-      return notifications.where((n) => n.isRead).toList();
-    default:
-      return notifications;
+  void _markAllAsRead() {
+    setState(() {
+      notifications = notifications
+          .map((n) => NotificationItem(
+                id: n.id,
+                title: n.title,
+                subtitle: n.subtitle,
+                avatar: n.avatar,
+                time: n.time,
+                isRead: true,
+              ))
+          .toList();
+    });
   }
-}
-  // สร้าง ListTile สำหรับแต่ละ NotificationItem
 
-  Widget _buildListTile(NotificationItem item, int index) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: Colors.white,
-        elevation: 3,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.pink.shade100,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(item.avatar, style: const TextStyle(fontSize: 22)),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(item.title,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
-                    const SizedBox(height: 4),
-                    Text(item.subtitle, style: const TextStyle(fontSize: 14)),
-                  ],
-                ),
-              ),
-              Column(
-                children: [
-                  Text(item.time,
-                      style: const TextStyle(
-                          fontSize: 12, color: Colors.grey)),
-                  if (!item.isRead)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 4.0),
-                      child: Icon(Icons.circle, size: 10, color: mainColor),
-                    ),
-                ],
-              )
-            ],
+  void _confirmDeleteAll() {
+    if (notifications.isEmpty) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ยืนยันการลบ'),
+        content: const Text('คุณต้องการลบการแจ้งเตือนทั้งหมดหรือไม่?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('ยกเลิก'),
           ),
-        ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                notifications.clear();
+              });
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('ลบการแจ้งเตือนทั้งหมดแล้ว')),
+              );
+            },
+            child: const Text('ลบทั้งหมด', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }
 
+  List<NotificationItem> _filteredNotifications() {
+    switch (_tabController.index) {
+      case 1:
+        return notifications.where((n) => !n.isRead).toList();
+      case 2:
+        return notifications.where((n) => n.isRead).toList();
+      default:
+        return notifications;
+    }
+  }
+
+  Widget _buildListTile(NotificationItem item, int index) {
+  return Dismissible(
+    key: Key(item.id.toString()),
+    direction: DismissDirection.endToStart,
+    background: Container(
+      color: Colors.red,
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: const Icon(Icons.delete, color: Colors.white),
+    ),
+    onDismissed: (_) {
+      setState(() {
+        notifications.removeAt(index);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ลบการแจ้งเตือนแล้ว')),
+      );
+    },
+    child: GestureDetector(
+      onTap: () {
+        setState(() {
+          final notif = notifications[index];
+          if (!notif.isRead) {
+            notifications[index] = NotificationItem(
+              id: notif.id,
+              title: notif.title,
+              subtitle: notif.subtitle,
+              avatar: notif.avatar,
+              time: notif.time,
+              isRead: true,
+            );
+            // เปลี่ยนแท็บไป "อ่านแล้ว" ถ้าอยู่ใน "ใหม่"
+            if (_tabController.index == 1) {
+              _tabController.animateTo(2);
+            }
+          }
+        });
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          color: Colors.white,
+          elevation: 3,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.pink.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(item.avatar, style: const TextStyle(fontSize: 22)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.title,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                      const SizedBox(height: 4),
+                      Text(item.subtitle, style: const TextStyle(fontSize: 14)),
+                    ],
+                  ),
+                ),
+                Column(
+                  children: [
+                    Text(item.time,
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.grey)),
+                    if (!item.isRead)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 4.0),
+                        child: Icon(Icons.circle, size: 10, color: mainColor),
+                      ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+
   @override
   void dispose() {
     _tabController.dispose();
-    client.disconnect();
+    if (client.connectionStatus?.state == MqttConnectionState.connected) {
+      client.disconnect();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentNotifications = _filteredNotifications(_tabController.index);
+    final currentNotifications = _filteredNotifications();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0FAFF),
       appBar: AppBar(
         title: const Text('การแจ้งเตือน', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
+        actions: [
+          TextButton(
+            onPressed: _markAllAsRead,
+            child: const Text('อ่านทั้งหมด', style: TextStyle(color: mainColor)),
+          ),
+          TextButton(
+            onPressed: _confirmDeleteAll,
+            child: const Text('ลบทั้งหมด', style: TextStyle(color: Colors.red)),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: mainColor,
@@ -338,12 +375,14 @@ class _NotificationPageState extends State<NotificationPage>
           ],
         ),
       ),
-      body: ListView.builder(
-        itemCount: currentNotifications.length,
-        itemBuilder: (context, index) {
-          return _buildListTile(currentNotifications[index], index);
-        },
-      ),
+      body: currentNotifications.isEmpty
+          ? const Center(child: Text('ไม่มีการแจ้งเตือน'))
+          : ListView.builder(
+              itemCount: currentNotifications.length,
+              itemBuilder: (context, index) {
+                return _buildListTile(currentNotifications[index], index);
+              },
+            ),
       bottomNavigationBar: BottomNavigationBar(
         showSelectedLabels: true,
         showUnselectedLabels: true,

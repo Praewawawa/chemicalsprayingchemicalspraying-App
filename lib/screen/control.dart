@@ -1,12 +1,14 @@
 // screen/control.dart
 import 'dart:async';
 import 'package:auto_route/auto_route.dart';
+import 'package:chemicalspraying/screen/mqtt_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:chemicalspraying/constants/colors.dart';
 import 'package:http/http.dart' as http;
 import '../router/routes.gr.dart';
 import 'dart:convert';
+import 'package:chemicalspraying/services/mqtt_service.dart';
 
 @RoutePage(name: 'ControlRoute')
 class ControlScreen extends StatefulWidget {
@@ -20,6 +22,10 @@ class _ControlScreenState extends State<ControlScreen> {
   int _selectedIndex = 1;
   bool isCustomMode = false;
   Timer? _holdTimer;
+  bool isControlOn = false;
+
+  late MqttService mqttService;
+  Timer? _reconnectTimer;
 
   final List<PageRouteInfo> _routes = [
     AddprofileRoute(),
@@ -28,24 +34,86 @@ class _ControlScreenState extends State<ControlScreen> {
     ProfileRoute(),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    mqttService = MqttService();
+    mqttService.connect();
+
+    // ตั้ง timer ทุก 2 วินาที ตรวจสอบสถานะ ถ้ายังไม่เชื่อมต่อให้รีเชื่อมต่อ
+    _reconnectTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (!mqttService.isConnected) {
+        mqttService.connect();
+      }
+      // สั่งให้ UI อัพเดตสถานะ
+      if (mounted) setState(() {});
+    });
+  }
+
+  void _toggleControl() {
+    if (!mqttService.isConnected) {
+      showErrorDialog('MQTT not connected');
+      return;
+    }
+
+    final payload = isControlOn ? 'manual_stop' : 'manual_start';
+    mqttService.publish('system/control', payload);
+
+    setState(() {
+      isControlOn = !isControlOn;
+    });
+  }
+
   Future<void> sendCommand(String command) async {
-    print('👉 ส่ง: $command');
+    print('👉 Sending command: $command');
     final url = Uri.parse('http://192.168.137.207:5000/control');
+
+    final appStart = DateTime.now(); // Start timing before sending
+
     try {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"direction": command}),
       );
+
+      final appEnd = DateTime.now(); // Time after receiving response
+
       if (response.statusCode == 200) {
-        print('✅ สำเร็จ: $command');
+        print('✅ Success: $command');
+        final json = jsonDecode(response.body);
+
+        // Total round-trip time: App -> Flask -> App (milliseconds)
+        final appRoundTrip = appEnd.difference(appStart).inMilliseconds;
+
+        // Flask to Pixhawk and Pixhawk to Flask response time (seconds)
+        final flaskToPixhawk =
+            (json["Timeapp"]["flask_to_pixhawk"] as num?)?.toDouble() ?? 0;
+        final pixhawkToFlask =
+            (json["Timeapp"]["pixhawk_to_flask_response"] as num?)
+                    ?.toDouble() ??
+                0;
+
+        // Combined Flask-Pixhawk round-trip time in milliseconds (3 decimal places)
+        final flaskPixhawkRoundTrip =
+            ((flaskToPixhawk + pixhawkToFlask) * 1000);
+
+        // Total time including decimal 3 places
+        final totalTime = appRoundTrip + flaskPixhawkRoundTrip;
+
+        print("⏱ Timing Summary:");
+        print(" - App ➜ Flask ➜ App (RTT): $appRoundTrip ms");
+        print(
+            " - Flask ➜ Pixhawk ➜ Flask response: ${flaskPixhawkRoundTrip.toStringAsFixed(3)} ms");
+        print(
+            " - Total (App ➜ Flask ➜ Pixhawk ➜ App): ${totalTime.toStringAsFixed(3)} ms");
       } else {
-        print('❌ ล้มเหลว: ${response.statusCode}');
-        showErrorDialog('server error: ${response.statusCode}');
+        print('❌ Failed with status code: ${response.statusCode}');
+        showErrorDialog('Server error: ${response.statusCode}');
       }
     } catch (e) {
-      print('❗ error: $e');
-      showErrorDialog('ไม่สามารถเชื่อมต่อกับ server: $e');
+      print('❗ Error: $e');
+      showErrorDialog('Cannot connect to server: $e');
     }
   }
 
@@ -73,25 +141,22 @@ class _ControlScreenState extends State<ControlScreen> {
   void sendArm() => sendCommand("arm");
   void sendDisarm() => sendCommand("disarm");
 
-  // เริ่มส่งคำสั่งซ้ำทุก 200ms ขณะกดปุ่ม
   void _startSendingCommand(String command) {
-    if (_holdTimer != null) return; // ป้องกัน Timer ซ้อนกัน
+    if (_holdTimer != null) return;
     sendCommand(command);
     _holdTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
       sendCommand(command);
     });
   }
 
-  // หยุดส่งคำสั่งและส่งคำสั่ง stop
   void _stopSendingCommand() {
     _holdTimer?.cancel();
     _holdTimer = null;
     sendCommand("stop");
   }
 
-  // เมื่อกดเลือกแท็บ
   void _onItemTapped(int index) {
-    if (_selectedIndex == index) return; // ไม่เปลี่ยน route ถ้าเลือกแท็บเดิม
+    if (_selectedIndex == index) return;
     setState(() {
       _selectedIndex = index;
     });
@@ -101,6 +166,8 @@ class _ControlScreenState extends State<ControlScreen> {
   @override
   void dispose() {
     _holdTimer?.cancel();
+    _reconnectTimer?.cancel();
+    mqttService.disconnect();
     super.dispose();
   }
 
@@ -109,7 +176,6 @@ class _ControlScreenState extends State<ControlScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF0FAFF),
       appBar: AppBar(
-        
         title: const Text(
           "RC Control Panel",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
@@ -118,6 +184,15 @@ class _ControlScreenState extends State<ControlScreen> {
         elevation: 0,
         centerTitle: true,
         actions: [
+          // ไอคอนสถานะเชื่อมต่อ MQTT
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Icon(
+              mqttService.isConnected ? Icons.wifi : Icons.wifi_off,
+              color: mqttService.isConnected ? Colors.green : Colors.red,
+              size: 28,
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: CupertinoSwitch(
@@ -171,7 +246,13 @@ class _ControlScreenState extends State<ControlScreen> {
               _actionButton("DISARM", Colors.amber, sendDisarm),
             ],
           ),
-          const SizedBox(height: 160),
+          const SizedBox(height: 20),
+          _actionButton(
+            isControlOn ? "ปิดระบบควบคุม" : "เปิดระบบควบคุม",
+            isControlOn ? Colors.red : Colors.blue,
+            _toggleControl,
+          ),
+          const SizedBox(height: 100),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -204,7 +285,6 @@ class _ControlScreenState extends State<ControlScreen> {
     );
   }
 
-  // Padding รอบๆ Widget
   Widget _padded(Widget child) {
     return Padding(
       padding: const EdgeInsets.all(5.0),
@@ -212,7 +292,6 @@ class _ControlScreenState extends State<ControlScreen> {
     );
   }
 
-  // ปุ่มทิศทาง ใช้ GestureDetector เพื่อจับการกดค้างและปล่อยปุ่ม
   Widget _directionButton(IconData icon, String command) {
     return SizedBox(
       width: 60,
@@ -237,7 +316,6 @@ class _ControlScreenState extends State<ControlScreen> {
     );
   }
 
-  // ปุ่ม STOP
   Widget _stopButton() {
     return SizedBox(
       width: 60,
@@ -265,7 +343,6 @@ class _ControlScreenState extends State<ControlScreen> {
     );
   }
 
-  // ปุ่ม ARM และ DISARM
   Widget _actionButton(String label, Color color, void Function() onPressed) {
     return ElevatedButton(
       onPressed: onPressed,
